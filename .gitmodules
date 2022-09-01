@@ -1,0 +1,21 @@
+[submodule "src/main/cpp/OpenCC"]
+	path = src/main/cpp/OpenCC
+	url = git@github.com:BYVoid/OpenCC.git
+[submodule "src/main/cpp/capnproto"]
+	path = src/main/cpp/capnproto
+	url = git@github.com:capnproto/capnproto.git
+[submodule "src/main/cpp/boost"]
+	path = src/main/cpp/boost
+	url = git@github.com:boostorg/boost.git
+[submodule "src/main/cpp/libiconv-gnu"]
+	path = src/main/cpp/libiconv-gnu
+	url = git@github.com:osfans/libiconv-gnu.git
+[submodule "src/main/cpp/librime-lua"]
+	path = src/main/cpp/librime-lua
+	url = git@github.com:hchunhui/librime-lua.git
+[submodule "src/main/cpp/librime"]
+	path = src/main/cpp/librime
+	url = git@github.com:shijiayao-main/librime.git
+[submodule "src/main/cpp/snappy"]
+	path = src/main/cpp/snappy
+	url = git@github.com:google/snappy.git
