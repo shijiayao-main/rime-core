@@ -1,7 +1,7 @@
 set(ICONV_SOURCES
-  libiconv/libcharset/lib/localcharset.c
-  libiconv/lib/iconv.c
-  libiconv/lib/relocatable.c
+  libiconv-gnu/libcharset/lib/localcharset.c
+  libiconv-gnu/lib/iconv.c
+  libiconv-gnu/lib/relocatable.c
 )
 add_library(iconv STATIC ${ICONV_SOURCES})
 add_library(Iconv::Iconv ALIAS iconv)
