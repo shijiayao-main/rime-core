@@ -20,3 +20,6 @@
 [submodule "src/main/cpp/snappy"]
 	path = src/main/cpp/snappy
 	url = git@github.com:google/snappy.git
+[submodule "src/main/cpp/librime-lua-deps"]
+	path = src/main/cpp/librime-lua-deps
+	url = git@github.com:hchunhui/librime-lua.git
