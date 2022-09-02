@@ -24,11 +24,9 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.jiaoay.rime.IMEExtensionsKt;
 import com.jiaoay.rime.data.AppPrefs;
 import com.jiaoay.rime.data.DataManager;
 import com.jiaoay.rime.data.opencc.OpenCCDictManager;
-import com.jiaoay.rime.RimeInputMethodEditorService;
 
 import java.io.BufferedReader;
 import java.io.CharArrayWriter;
@@ -36,9 +34,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -49,201 +45,6 @@ import java.util.Map;
  * href="https://github.com/BYVoid/OpenCC">OpenCC</a>
  */
 public class Rime {
-    /**
-     * Rime編碼區
-     */
-    public static class RimeComposition {
-        int length;
-        int cursor_pos;
-        int sel_start;
-        int sel_end;
-        String preedit;
-        byte[] bytes;
-
-        public String getText() {
-            if (length == 0) return "";
-            bytes = preedit.getBytes();
-            return preedit;
-        }
-
-        public int getStart() {
-            if (length == 0) return 0;
-            return new String(bytes, 0, sel_start).length();
-        }
-
-        public int getEnd() {
-            if (length == 0) return 0;
-            return new String(bytes, 0, sel_end).length();
-        }
-    }
-
-    /**
-     * Rime候選項
-     */
-    public static class RimeCandidate {
-        public String text;
-        public String comment;
-
-        public RimeCandidate(String text, String comment) {
-            this.text = text;
-            this.comment = comment;
-        }
-
-        public RimeCandidate() {
-        }
-    }
-
-    /**
-     * Rime候選區，包含多個{@link RimeCandidate 候選項}
-     */
-    public static class RimeMenu {
-        int page_size;
-        int page_no;
-        boolean is_last_page;
-        int highlighted_candidate_index;
-        int num_candidates;
-        RimeCandidate[] candidates;
-        String select_keys;
-    }
-
-    /**
-     * Rime上屏的字符串
-     */
-    public static class RimeCommit {
-        int data_size;
-        // v0.9
-        String text;
-    }
-
-    /**
-     * Rime環境，包括 {@link RimeComposition 編碼區} 、{@link RimeMenu 候選區}
-     */
-    public static class RimeContext {
-        int data_size;
-        // v0.9
-        RimeComposition composition;
-        RimeMenu menu;
-        // v0.9.2
-        String commit_text_preview;
-        String[] select_labels;
-
-        public int size() {
-            if (menu == null) return 0;
-            return menu.num_candidates;
-        }
-
-        public RimeCandidate[] getCandidates() {
-            return size() == 0 ? null : menu.candidates;
-        }
-    }
-
-    /**
-     * Rime狀態
-     */
-    public static class RimeStatus {
-        int data_size;
-        // v0.9
-        String schema_id;
-        String schema_name;
-        boolean is_disabled;
-        boolean is_composing;
-        boolean is_ascii_mode;
-        boolean is_full_shape;
-        boolean is_simplified;
-        boolean is_traditional;
-        boolean is_ascii_punct;
-    }
-
-    /**
-     * Rime方案
-     */
-    public static class RimeSchema {
-        private final String kRadioSelected = " ✓";
-
-        Map<String, Object> schema = new HashMap<String, Object>();
-        List<Map<String, Object>> switches = new ArrayList<Map<String, Object>>();
-
-        public RimeSchema(String schema_id) {
-            Object o;
-            o = schema_get_value(schema_id, "schema");
-            if (o == null || !(o instanceof Map)) return;
-            schema = (Map<String, Object>) o;
-            o = schema_get_value(schema_id, "switches");
-            if (o == null || !(o instanceof List)) return;
-            switches = (List<Map<String, Object>>) o;
-            check(); // 檢查不在選單中顯示的選項
-            o = schema_get_value(schema_id, "menu");
-            if (o == null || !(o instanceof HashMap)) return;
-        }
-
-        public void check() {
-            if (switches.isEmpty()) return;
-            for (Iterator<?> it = switches.iterator(); it.hasNext(); ) {
-                Map<?, ?> o = (Map<?, ?>) it.next();
-                if (!o.containsKey("states")) it.remove();
-            }
-        }
-
-        public RimeCandidate[] getCandidates() {
-            if (switches.isEmpty()) return null;
-            RimeCandidate[] candidates = new RimeCandidate[switches.size()];
-            int i = 0;
-            for (Map<String, Object> o : switches) {
-                candidates[i] = new RimeCandidate();
-                final List<?> states = (List<?>) o.get("states");
-                Integer value = (Integer) o.get("value");
-                if (value == null) value = 0;
-                candidates[i].text = states.get(value).toString();
-
-                String kRightArrow = "→ ";
-                if (showSwitchArrow)
-                    candidates[i].comment =
-                            o.containsKey("options") ? "" : kRightArrow + states.get(1 - value).toString();
-                else
-                    candidates[i].comment = o.containsKey("options") ? "" : states.get(1 - value).toString();
-                i++;
-            }
-            return candidates;
-        }
-
-        public void getValue() {
-            if (switches.isEmpty()) return; // 無方案
-            for (int j = 0; j < switches.size(); j++) {
-                final Map<String, Object> o = switches.get(j);
-                if (o.containsKey("options")) {
-                    List<?> options = (List<?>) o.get("options");
-                    for (int i = 0; i < options.size(); i++) {
-                        final String s = (String) options.get(i);
-                        if (Rime.get_option(s)) {
-                            o.put("value", i);
-                            break;
-                        }
-                    }
-                } else {
-                    o.put("value", Rime.get_option(o.get("name").toString()) ? 1 : 0);
-                }
-                switches.set(j, o);
-            }
-        }
-
-        public void toggleOption(int i) {
-            if (switches.isEmpty()) return;
-            Map<String, Object> o = switches.get(i);
-            Integer value = (Integer) o.get("value");
-            if (value == null) value = 0;
-            if (o.containsKey("options")) {
-                List<String> options = (List<String>) o.get("options");
-                Rime.setOption(options.get(value), false);
-                value = (value + 1) % options.size();
-                Rime.setOption(options.get(value), true);
-            } else {
-                value = 1 - value;
-                Rime.setOption(o.get("name").toString(), value == 1);
-            }
-            o.put("value", value);
-            switches.set(i, o);
-        }
-    }
 
     private static Rime self;
 
@@ -255,6 +56,7 @@ public class Rime {
     private static boolean mOnMessage;
 
     static {
+        // TODO: 2022/9/2 这个东西换个地方
         System.loadLibrary("rime_jni");
     }
 
@@ -271,7 +73,7 @@ public class Rime {
 
     public static int META_RELEASE_ON = get_modifier_by_name("Release");
     private static boolean showSwitches = true;
-    private static boolean showSwitchArrow = false;
+    static boolean showSwitchArrow = false;
 
     public static void setShowSwitches(boolean show) {
         showSwitches = show;
@@ -643,7 +445,8 @@ public class Rime {
     }
 
     public static void handleRimeNotification(String message_type, String message_value) {
-        mOnMessage = true;
+        // TODO: 2022/9/2 临时解决编译问题
+        /*mOnMessage = true;
         final RimeEvent event = RimeEvent.create(message_type, message_value);
         // Timber.i("message: [%s] %s", message_type, message_value);
         final RimeInputMethodEditorService rimeInputMethodEditorService = RimeInputMethodEditorService.getService();
@@ -657,7 +460,7 @@ public class Rime {
             final String option = message_value.substring(value ? 0 : 1);
             rimeInputMethodEditorService.getTextInputManager().onOptionChanged(option, value);
         }
-        mOnMessage = false;
+        mOnMessage = false;*/
     }
 
     public static String openccConvert(String line, String name) {

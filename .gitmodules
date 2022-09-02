@@ -10,9 +10,10 @@
 [submodule "src/main/cpp/libiconv-gnu"]
 	path = src/main/cpp/libiconv-gnu
 	url = git@github.com:osfans/libiconv-gnu.git
-[submodule "src/main/cpp/librime-lua"]
-	path = src/main/cpp/librime-lua
-	url = git@github.com:hchunhui/librime-lua.git
+[submodule "librime-lua-deps"]
+    path = src/main/cpp/librime-lua-deps
+    url = https://github.com/hchunhui/librime-lua
+    branch = thirdparty
 [submodule "src/main/cpp/librime"]
 	path = src/main/cpp/librime
 	url = git@github.com:shijiayao-main/librime.git
