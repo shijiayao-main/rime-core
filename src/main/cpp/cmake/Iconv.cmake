@@ -9,9 +9,9 @@ target_compile_definitions(iconv PRIVATE
   LIBDIR="c" BUILDING_LIBICONV IN_LIBRARY
 )
 target_include_directories(iconv PRIVATE
-  "libiconv/lib"
-  "libiconv/libcharset/include"
+  "libiconv-gnu/lib"
+  "libiconv-gnu/libcharset/include"
 )
 target_include_directories(iconv PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libiconv/include>
+  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libiconv-gnu/include>
 )
