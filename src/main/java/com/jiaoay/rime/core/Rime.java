@@ -55,16 +55,11 @@ public class Rime {
     private static List<?> mSchemaList;
     private static boolean mOnMessage;
 
-    static {
-        // TODO: 2022/9/2 这个东西换个地方
-        System.loadLibrary("rime");
-    }
-
-    /*
-    Android SDK包含了如下6个修饰键的状态，其中function键会被trime消费掉，因此只处理5个键
-    Android和librime对按键命名并不一致。读取可能有误。librime按键命名见如下链接，
-    https://github.com/rime/librime/blob/master/src/rime/key_table.cc
-     */
+    /**
+     * Android SDK包含了如下6个修饰键的状态，其中function键会被trime消费掉，因此只处理5个键
+     * Android和librime对按键命名并不一致。读取可能有误。librime按键命名见如下链接，
+     * https://github.com/rime/librime/blob/master/src/rime/key_table.cc
+     **/
     public static int META_SHIFT_ON = get_modifier_by_name("Shift");
     public static int META_CTRL_ON = get_modifier_by_name("Control");
     public static int META_ALT_ON = get_modifier_by_name("Alt");
@@ -422,6 +417,7 @@ public class Rime {
                 OpenCCDictManager.internalDeploy();
             }
             self = new Rime(context, full_check);
+            System.loadLibrary("rime");
         }
         return self;
     }
