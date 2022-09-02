@@ -57,7 +57,7 @@ public class Rime {
 
     static {
         // TODO: 2022/9/2 这个东西换个地方
-        System.loadLibrary("rime_jni");
+        System.loadLibrary("rime");
     }
 
     /*

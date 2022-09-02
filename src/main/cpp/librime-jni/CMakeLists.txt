@@ -6,12 +6,12 @@ file(GLOB RIME_JNI_SOURCES
   opencc.cc
   rime_jni.cc
 )
-add_library(rime_jni SHARED ${RIME_JNI_SOURCES})
-target_include_directories(rime_jni PRIVATE
+add_library(rime SHARED ${RIME_JNI_SOURCES})
+target_include_directories(rime PRIVATE
   "${CMAKE_SOURCE_DIR}/librime/src"
   "${Opencc_INCLUDE_PATH}"
 )
-target_link_libraries(rime_jni rime-static log ${Opencc_LIBRARY})
+target_link_libraries(rime rime-static log ${Opencc_LIBRARY})
 
 string(TIMESTAMP TODAY "%Y%m%d")
 execute_process(
@@ -34,7 +34,7 @@ execute_process(
 string(STRIP "${LIBRIME_VERSION}" LIBRIME_VERSION)
 set(LIBRIME_VERSION "${LIBRIME_VERSION}-${ANDROID_ABI}")
 
-target_compile_definitions(rime_jni PRIVATE
+target_compile_definitions(rime PRIVATE
   CLASSNAME="com/jiaoay/rime/core/Rime"
   TRIME_VERSION="${TRIME_VERSION}"
   OPENCC_VERSION="${OPENCC_VERSION}"

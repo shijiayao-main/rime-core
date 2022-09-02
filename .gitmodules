@@ -10,16 +10,21 @@
 [submodule "src/main/cpp/libiconv-gnu"]
 	path = src/main/cpp/libiconv-gnu
 	url = git@github.com:osfans/libiconv-gnu.git
-[submodule "librime-lua-deps"]
-    path = src/main/cpp/librime-lua-deps
-    url = https://github.com/hchunhui/librime-lua
-    branch = thirdparty
-[submodule "src/main/cpp/librime"]
-	path = src/main/cpp/librime
-	url = git@github.com:shijiayao-main/librime.git
 [submodule "src/main/cpp/snappy"]
 	path = src/main/cpp/snappy
 	url = git@github.com:google/snappy.git
+[submodule "src/main/cpp/librime"]
+	path = src/main/cpp/librime
+	url = git@github.com:rime/librime.git
+[submodule "src/main/cpp/librime-octagram"]
+	path = src/main/cpp/librime-octagram
+	url = git@github.com:lotem/librime-octagram.git
+[submodule "src/main/cpp/librime-charcode"]
+	path = src/main/cpp/librime-charcode
+	url = git@github.com:rime/librime-charcode.git
+[submodule "src/main/cpp/librime-lua"]
+	path = src/main/cpp/librime-lua
+	url = git@github.com:hchunhui/librime-lua.git
 [submodule "src/main/cpp/librime-lua-deps"]
 	path = src/main/cpp/librime-lua-deps
 	url = git@github.com:hchunhui/librime-lua.git
