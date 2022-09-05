@@ -35,7 +35,7 @@ sealed class RimeEvent(messageValue: String) {
         Unknown
     }
 
-    companion object RimeNotificationHandler {
+    companion object {
         @JvmStatic
         fun create(type: String, value: String) =
             when (type) {

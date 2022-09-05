@@ -17,14 +17,14 @@ public class RimeSchema {
 
     public RimeSchema(String schema_id) {
         Object o;
-        o = Rime.schema_get_value(schema_id, "schema");
+        o = RimeManager.Companion.getInstance().schemaGetValue(schema_id, "schema");
         if (o == null || !(o instanceof Map)) return;
         schema = (Map<String, Object>) o;
-        o = Rime.schema_get_value(schema_id, "switches");
+        o = RimeManager.Companion.getInstance().schemaGetValue(schema_id, "switches");
         if (o == null || !(o instanceof List)) return;
         switches = (List<Map<String, Object>>) o;
         check(); // 檢查不在選單中顯示的選項
-        o = Rime.schema_get_value(schema_id, "menu");
+        o = RimeManager.Companion.getInstance().schemaGetValue(schema_id, "menu");
         if (o == null || !(o instanceof HashMap)) return;
     }
 
@@ -48,7 +48,7 @@ public class RimeSchema {
             candidates[i].text = states.get(value).toString();
 
             String kRightArrow = "→ ";
-            if (Rime.showSwitchArrow)
+            if (RimeManager.Companion.getInstance().getShowSwitchArrow())
                 candidates[i].comment =
                         o.containsKey("options") ? "" : kRightArrow + states.get(1 - value).toString();
             else
@@ -66,13 +66,13 @@ public class RimeSchema {
                 List<?> options = (List<?>) o.get("options");
                 for (int i = 0; i < options.size(); i++) {
                     final String s = (String) options.get(i);
-                    if (Rime.get_option(s)) {
+                    if (RimeManager.Companion.getInstance().getOption(s)) {
                         o.put("value", i);
                         break;
                     }
                 }
             } else {
-                o.put("value", Rime.get_option(o.get("name").toString()) ? 1 : 0);
+                o.put("value", RimeManager.Companion.getInstance().getOption(o.get("name").toString()) ? 1 : 0);
             }
             switches.set(j, o);
         }
@@ -85,12 +85,12 @@ public class RimeSchema {
         if (value == null) value = 0;
         if (o.containsKey("options")) {
             List<String> options = (List<String>) o.get("options");
-            Rime.setOption(options.get(value), false);
+            RimeManager.Companion.getInstance().setOption(options.get(value), false);
             value = (value + 1) % options.size();
-            Rime.setOption(options.get(value), true);
+            RimeManager.Companion.getInstance().setOption(options.get(value), true);
         } else {
             value = 1 - value;
-            Rime.setOption(o.get("name").toString(), value == 1);
+            RimeManager.Companion.getInstance().setOption(o.get("name").toString(), value == 1);
         }
         o.put("value", value);
         switches.set(i, o);

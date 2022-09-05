@@ -2,13 +2,14 @@ package com.jiaoay.rime.util
 
 import android.util.TypedValue
 import com.blankj.utilcode.util.SizeUtils
-import com.jiaoay.rime.core.Rime
+import com.jiaoay.rime.core.RimeManager
 
 object ConfigGetter {
 
     @JvmStatic
-    fun loadMap(name: String, key: String = ""): Map<String?, Map<String?, *>?>? =
-        Rime.config_get_map(name, key)
+    fun loadMap(name: String, key: String = ""): Map<String?, Map<String?, *>?>? {
+        return RimeManager.Instance.configGetMap(name, key)
+    }
 
     @JvmStatic
     fun Map<String, *>.getInt(key: String, default: Int): Int {

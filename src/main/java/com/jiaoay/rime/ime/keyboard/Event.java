@@ -24,6 +24,7 @@ import android.view.KeyEvent;
 import androidx.annotation.NonNull;
 
 import com.jiaoay.rime.core.Rime;
+import com.jiaoay.rime.core.RimeManager;
 import com.jiaoay.rime.data.AppPrefs;
 import com.jiaoay.rime.data.Config;
 import com.jiaoay.rime.ime.enums.Keycode;
@@ -188,13 +189,13 @@ public class Event {
             s = s.toUpperCase(Locale.getDefault());
         else if (s.length() == 1
                 && mKeyboard != null
-                && !Rime.isAsciiMode()
+                && !RimeManager.Companion.getInstance().isAsciiMode()
                 && mKeyboard.isLabelUppercase()) s = s.toUpperCase(Locale.getDefault());
         return s;
     }
 
     public String getLabel() {
-        if (!TextUtils.isEmpty(toggle)) return (String) states.get(Rime.getOption(toggle) ? 1 : 0);
+        if (!TextUtils.isEmpty(toggle)) return (String) states.get(RimeManager.Companion.getInstance().getOption(toggle) ? 1 : 0);
 
         if (mKeyboard.isOnlyShiftOn()) {
             if (code >= KeyEvent.KEYCODE_0
@@ -243,7 +244,7 @@ public class Event {
         if (!TextUtils.isEmpty(label)) return;
         int c = code;
         if (c == KeyEvent.KEYCODE_SPACE) {
-            label = Rime.getSchemaName();
+            label = RimeManager.Companion.getInstance().getSchemaName();
         } else {
             if (c > 0) label = Keycode.Companion.getDisplayLabel(c, mask);
         }
@@ -267,12 +268,12 @@ public class Event {
     public static int[] getRimeEvent(int code, int mask) {
         int i = RimeKeycode.get().getRimeCode(code);
         int m = 0;
-        if (hasModifier(mask, KeyEvent.META_SHIFT_ON)) m |= Rime.META_SHIFT_ON;
-        if (hasModifier(mask, KeyEvent.META_CTRL_ON)) m |= Rime.META_CTRL_ON;
-        if (hasModifier(mask, KeyEvent.META_ALT_ON)) m |= Rime.META_ALT_ON;
-        if (hasModifier(mask, KeyEvent.META_SYM_ON)) m |= Rime.META_SYM_ON;
-        if (hasModifier(mask, KeyEvent.META_META_ON)) m |= Rime.META_META_ON;
-        if (mask == Rime.META_RELEASE_ON) m |= Rime.META_RELEASE_ON;
+        if (hasModifier(mask, KeyEvent.META_SHIFT_ON)) m |= RimeManager.Companion.getInstance().metaShiftOn();
+        if (hasModifier(mask, KeyEvent.META_CTRL_ON)) m |= RimeManager.Companion.getInstance().metaCtrlOn();
+        if (hasModifier(mask, KeyEvent.META_ALT_ON)) m |= RimeManager.Companion.getInstance().metaAltOn();
+        if (hasModifier(mask, KeyEvent.META_SYM_ON)) m |= RimeManager.Companion.getInstance().metaSymOn();
+        if (hasModifier(mask, KeyEvent.META_META_ON)) m |= RimeManager.Companion.getInstance().metaMetaOn();
+        if (mask == RimeManager.Companion.getInstance().metaReleaseOn()) m |= RimeManager.Companion.getInstance().metaReleaseOn();
         return new int[]{i, m};
     }
 

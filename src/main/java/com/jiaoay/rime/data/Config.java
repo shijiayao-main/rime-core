@@ -35,6 +35,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.jiaoay.rime.core.Rime;
+import com.jiaoay.rime.core.RimeManager;
 import com.jiaoay.rime.ime.enums.PositionType;
 import com.jiaoay.rime.ime.enums.SymbolKeyboardType;
 import com.jiaoay.rime.ime.keyboard.Key;
@@ -98,14 +99,12 @@ public class Config {
     }
 
     public Config(@NonNull Context context, boolean skipDeploy) {
-        String methodName =
-                "\t<TrimeInit>\t" + Thread.currentThread().getStackTrace()[2].getMethodName() + "\t";
         self = this;
         themeName = appPrefs.getLooks().getSelectedTheme();
         soundPackageName = appPrefs.getKeyboard().getSoundPackage();
 
         DataManager.sync();
-        Rime.get(context, !DataManager.INSTANCE.getSharedDataDir().exists());
+        RimeManager.Companion.getInstance().initRime(!DataManager.INSTANCE.getSharedDataDir().exists());
 
         //    正常逻辑不应该部署全部主题，init()方法已经做过当前主题的部署
         //    Timber.d(methodName + "deployTheme");
@@ -201,7 +200,9 @@ public class Config {
     private void deployTheme() {
         if (userDataDir.contentEquals(sharedDataDir)) return; // 相同文件夾不部署主題
         final String[] configs = getThemeKeys(false);
-        for (String config : configs) Rime.deploy_config_file(config, "config_version");
+        for (String config : configs) {
+            RimeManager.Companion.getInstance().deployConfigFile(config, "config_version");
+        }
     }
 
     public void setTheme(String theme) {
@@ -226,9 +227,9 @@ public class Config {
         // copy soundpackage yaml file from sound folder to build folder
         try {
             InputStream in = new FileInputStream(file);
-            OutputStream out =
-                    new FileOutputStream(
-                            userDataDir + File.separator + "build" + File.separator + name + ".sound.yaml");
+            OutputStream out = new FileOutputStream(
+                            userDataDir + File.separator + "build" + File.separator + name + ".sound.yaml"
+            );
 
             byte[] buffer = new byte[1024];
             int len;
@@ -271,19 +272,19 @@ public class Config {
         try {
             String file_name = themeName + ".yaml";
             if (skip_delopy) {
-                File f = new File(Rime.get_user_data_dir() + File.separator + "build", file_name);
+                File f = new File(RimeManager.Companion.getInstance().getUserDataDir() + File.separator + "build", file_name);
                 if (f.exists()) {
                 } else {
-                    Rime.deploy_config_file(file_name, "config_version");
+                    RimeManager.Companion.getInstance().deployConfigFile(file_name, "config_version");
                 }
             } else {
-                Rime.deploy_config_file(file_name, "config_version");
+                RimeManager.Companion.getInstance().deployConfigFile(file_name, "config_version");
             }
 
-            Map<String, Map<String, ?>> globalThemeConfig = Rime.config_get_map(themeName, "");
+            Map<String, Map<String, ?>> globalThemeConfig = RimeManager.Companion.getInstance().configGetMap(themeName, "");
             if (globalThemeConfig == null) {
                 themeName = defaultName;
-                globalThemeConfig = Rime.config_get_map(themeName, "");
+                globalThemeConfig = RimeManager.Companion.getInstance().configGetMap(themeName, "");
             }
             mDefaultStyle = (Map<?, ?>) globalThemeConfig.get("style");
             fallbackColors = (Map<?, ?>) globalThemeConfig.get("fallback_colors");
@@ -293,8 +294,8 @@ public class Config {
             presetKeyboards = (Map<String, Map<String, ?>>) globalThemeConfig.get("preset_keyboards");
             liquidKeyboard = globalThemeConfig.get("liquid_keyboard");
             initLiquidKeyboard();
-            Rime.setShowSwitches(appPrefs.getKeyboard().getSwitchesEnabled());
-            Rime.setShowSwitchArrow(appPrefs.getKeyboard().getSwitchArrowEnabled());
+            RimeManager.Companion.getInstance().setShowSwitches(appPrefs.getKeyboard().getSwitchesEnabled());
+            RimeManager.Companion.getInstance().setShowSwitchArrow(appPrefs.getKeyboard().getSwitchArrowEnabled());
             reset();
             initCurrentColors();
             initEnterLabels();
@@ -305,8 +306,8 @@ public class Config {
     }
 
     public void reset() {
-        schema_id = Rime.getSchemaId();
-        if (schema_id != null) mStyle = (Map<?, ?>) Rime.schema_get_value(schema_id, "style");
+        schema_id = RimeManager.Companion.getInstance().getSchemaId();
+        if (schema_id != null) mStyle = (Map<?, ?>) RimeManager.Companion.getInstance().schemaGetValue(schema_id, "style");
     }
 
     @Nullable
@@ -373,7 +374,7 @@ public class Config {
             else {
                 if (schema_id.contains("_")) name = schema_id.split("_")[0];
                 if (!presetKeyboards.containsKey(name)) { // 匹配“_”前的方案名
-                    Object o = Rime.schema_get_value(schema_id, "speller/alphabet");
+                    Object o = RimeManager.Companion.getInstance().schemaGetValue(schema_id, "speller/alphabet");
                     name = "qwerty"; // 26
                     if (o != null) {
                         final String alphabet = o.toString();
@@ -387,7 +388,7 @@ public class Config {
             }
         }
         if (!presetKeyboards.containsKey(name)) name = "default";
-        @Nullable final Map<?, ?> m = (Map<?, ?>) presetKeyboards.get(name);
+        @Nullable final Map<?, ?> m = presetKeyboards.get(name);
         assert m != null;
         if (m.containsKey("import_preset")) {
             name = Objects.requireNonNull(m.get("import_preset")).toString();

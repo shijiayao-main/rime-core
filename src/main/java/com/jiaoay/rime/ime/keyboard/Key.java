@@ -26,6 +26,7 @@ import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 
 import com.jiaoay.rime.core.Rime;
+import com.jiaoay.rime.core.RimeManager;
 import com.jiaoay.rime.data.Config;
 import com.jiaoay.rime.ime.enums.KeyEventType;
 import com.jiaoay.rime.util.ConfigGetter;
@@ -514,7 +515,7 @@ public class Key {
         // shift_lock #ascii_long: 英文長按中文單按鎖定, long: 長按鎖定, click: 單按鎖定
         if ("long".equals(s)) return false;
         if ("click".equals(s)) return true;
-        if ("ascii_long".equals(s)) return !Rime.isAsciiMode();
+        if ("ascii_long".equals(s)) return !RimeManager.Companion.getInstance().isAsciiMode();
         return false;
     }
 
@@ -527,23 +528,23 @@ public class Key {
         if (type != KeyEventType.CLICK.ordinal() && type >= 0 && type <= EVENT_NUM)
             e = events[type];
         if (e != null) return true;
-        if (events[KeyEventType.ASCII.ordinal()] != null && Rime.isAsciiMode()) return false;
+        if (events[KeyEventType.ASCII.ordinal()] != null && RimeManager.Companion.getInstance().isAsciiMode()) return false;
         if (send_bindings) {
-            if (events[KeyEventType.PAGING.ordinal()] != null && Rime.isPaging()) return true;
-            if (events[KeyEventType.HAS_MENU.ordinal()] != null && Rime.hasMenu()) return true;
-            if (events[KeyEventType.COMPOSING.ordinal()] != null && Rime.isComposing()) return true;
+            if (events[KeyEventType.PAGING.ordinal()] != null && RimeManager.Companion.getInstance().isPaging()) return true;
+            if (events[KeyEventType.HAS_MENU.ordinal()] != null && RimeManager.Companion.getInstance().hasMenu()) return true;
+            if (events[KeyEventType.COMPOSING.ordinal()] != null && RimeManager.Companion.getInstance().isComposing()) return true;
         }
         return false;
     }
 
     private Event getEvent() {
-        if (events[KeyEventType.ASCII.ordinal()] != null && Rime.isAsciiMode())
+        if (events[KeyEventType.ASCII.ordinal()] != null && RimeManager.Companion.getInstance().isAsciiMode())
             return events[KeyEventType.ASCII.ordinal()];
-        if (events[KeyEventType.PAGING.ordinal()] != null && Rime.isPaging())
+        if (events[KeyEventType.PAGING.ordinal()] != null && RimeManager.Companion.getInstance().isPaging())
             return events[KeyEventType.PAGING.ordinal()];
-        if (events[KeyEventType.HAS_MENU.ordinal()] != null && Rime.hasMenu())
+        if (events[KeyEventType.HAS_MENU.ordinal()] != null && RimeManager.Companion.getInstance().hasMenu())
             return events[KeyEventType.HAS_MENU.ordinal()];
-        if (events[KeyEventType.COMPOSING.ordinal()] != null && Rime.isComposing())
+        if (events[KeyEventType.COMPOSING.ordinal()] != null && RimeManager.Companion.getInstance().isComposing())
             return events[KeyEventType.COMPOSING.ordinal()];
         return getClick();
     }
@@ -564,14 +565,14 @@ public class Key {
         Event e = null;
         if (i != KeyEventType.CLICK.ordinal() && i >= 0 && i <= EVENT_NUM) e = events[i];
         if (e != null) return e;
-        if (events[KeyEventType.ASCII.ordinal()] != null && Rime.isAsciiMode())
+        if (events[KeyEventType.ASCII.ordinal()] != null && RimeManager.Companion.getInstance().isAsciiMode())
             return events[KeyEventType.ASCII.ordinal()];
         if (send_bindings) {
-            if (events[KeyEventType.PAGING.ordinal()] != null && Rime.isPaging())
+            if (events[KeyEventType.PAGING.ordinal()] != null && RimeManager.Companion.getInstance().isPaging())
                 return events[KeyEventType.PAGING.ordinal()];
-            if (events[KeyEventType.HAS_MENU.ordinal()] != null && Rime.hasMenu())
+            if (events[KeyEventType.HAS_MENU.ordinal()] != null && RimeManager.Companion.getInstance().hasMenu())
                 return events[KeyEventType.HAS_MENU.ordinal()];
-            if (events[KeyEventType.COMPOSING.ordinal()] != null && Rime.isComposing())
+            if (events[KeyEventType.COMPOSING.ordinal()] != null && RimeManager.Companion.getInstance().isComposing())
                 return events[KeyEventType.COMPOSING.ordinal()];
         }
         return getClick();
@@ -589,7 +590,7 @@ public class Key {
         Event event = getEvent();
         if (!TextUtils.isEmpty(label)
                 && event == getClick()
-                && (events[KeyEventType.ASCII.ordinal()] == null && !Rime.showAsciiPunch()))
+                && (events[KeyEventType.ASCII.ordinal()] == null && !RimeManager.Companion.getInstance().showAsciiPunch()))
             return label; // 中文狀態顯示標籤
         return event.getLabel();
     }
