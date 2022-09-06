@@ -3,6 +3,8 @@
 #include <opencc/SimpleConverter.hpp>
 #include <opencc/DictConverter.hpp>
 #include "rime_jni.h"
+#include <jni.h>
+
 using namespace opencc;
 using std::string;
 
@@ -50,7 +52,7 @@ Java_com_jiaoay_rime_core_Rime_opencc_1convert_1dictionary(JNIEnv *env, jobject 
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_jiaoay_rime_data_opencc_OpenCCDictManager_openccDictConv(JNIEnv *env, jclass clazz,
+Java_com_jiaoay_rime_core_Rime_openccDictConv(JNIEnv *env, jclass clazz,
                                                                    jstring src, jstring dest,
                                                                    jboolean mode) {
   using namespace opencc;

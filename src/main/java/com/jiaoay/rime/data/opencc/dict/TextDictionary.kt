@@ -1,5 +1,6 @@
 package com.jiaoay.rime.data.opencc.dict
 
+import com.jiaoay.rime.core.RimeManager
 import com.jiaoay.rime.data.opencc.OpenCCDictManager
 import java.io.File
 
@@ -23,7 +24,7 @@ class TextDictionary(file: File) : Dictionary() {
 
     override fun toOpenCCDictionary(dest: File): OpenCCDictionary {
         ensureBin(dest)
-        OpenCCDictManager.openccDictConv(
+        RimeManager.Instance.openccDictConv(
             file.absolutePath,
             dest.absolutePath,
             OpenCCDictManager.MODE_TXT_TO_BIN

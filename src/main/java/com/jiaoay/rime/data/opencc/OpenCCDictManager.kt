@@ -10,9 +10,6 @@ import java.io.InputStream
 import kotlin.system.measureTimeMillis
 
 object OpenCCDictManager {
-    init {
-        System.loadLibrary("rime")
-    }
 
     private val openccDictDir = File(
         DataManager.getDataDir("opencc")
@@ -64,9 +61,6 @@ object OpenCCDictManager {
         tempFile.delete()
         return new
     }
-
-    @JvmStatic
-    external fun openccDictConv(src: String, dest: String, mode: Boolean)
 
     const val MODE_BIN_TO_TXT = true // OCD2 to TXT
     const val MODE_TXT_TO_BIN = false // TXT to OCD2

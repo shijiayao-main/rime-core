@@ -35,6 +35,10 @@ class RimeManager private constructor() {
     private var rime: Rime? = null
 
     /////
+    fun openccDictConv(src: String, dest: String, mode: Boolean) {
+        rime?.openccDictConv(src, dest, mode)
+    }
+
     fun getOpenccVersion(): String {
         return rime?.get_opencc_version() ?: ""
     }

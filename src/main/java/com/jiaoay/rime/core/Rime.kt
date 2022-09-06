@@ -190,4 +190,6 @@ class Rime(var callback: ((String, String) -> Unit)?) {
     )
 
     external fun get_trime_version(): String?
+
+    external fun openccDictConv(src: String, dest: String, mode: Boolean)
 }
