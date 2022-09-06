@@ -34,7 +34,6 @@ import android.util.TypedValue;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.jiaoay.rime.core.Rime;
 import com.jiaoay.rime.core.RimeManager;
 import com.jiaoay.rime.ime.enums.PositionType;
 import com.jiaoay.rime.ime.enums.SymbolKeyboardType;
@@ -104,7 +103,7 @@ public class Config {
         soundPackageName = appPrefs.getKeyboard().getSoundPackage();
 
         DataManager.sync();
-        RimeManager.Companion.getInstance().initRime(!DataManager.INSTANCE.getSharedDataDir().exists());
+        RimeManager.Companion.getInstance().syncRime(!DataManager.INSTANCE.getSharedDataDir().exists());
 
         //    正常逻辑不应该部署全部主题，init()方法已经做过当前主题的部署
         //    Timber.d(methodName + "deployTheme");

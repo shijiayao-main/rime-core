@@ -1,98 +1,104 @@
-package com.jiaoay.rime.core;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+package com.jiaoay.rime.core
 
 /**
  * Rime方案
  */
-public class RimeSchema {
-    private final String kRadioSelected = " ✓";
+class RimeSchema(private val schemaId: String) {
+    private val kRadioSelected = " ✓"
+    var schema: Map<String, Any>? = HashMap()
+    var switches: MutableList<MutableMap<String, Any>> = ArrayList()
 
-    Map<String, Object> schema = new HashMap<String, Object>();
-    List<Map<String, Object>> switches = new ArrayList<Map<String, Object>>();
-
-    public RimeSchema(String schema_id) {
-        Object o;
-        o = RimeManager.Companion.getInstance().schemaGetValue(schema_id, "schema");
-        if (o == null || !(o instanceof Map)) return;
-        schema = (Map<String, Object>) o;
-        o = RimeManager.Companion.getInstance().schemaGetValue(schema_id, "switches");
-        if (o == null || !(o instanceof List)) return;
-        switches = (List<Map<String, Object>>) o;
-        check(); // 檢查不在選單中顯示的選項
-        o = RimeManager.Companion.getInstance().schemaGetValue(schema_id, "menu");
-        if (o == null || !(o instanceof HashMap)) return;
+    init {
+        init()
     }
 
-    public void check() {
-        if (switches.isEmpty()) return;
-        for (Iterator<?> it = switches.iterator(); it.hasNext(); ) {
-            Map<?, ?> o = (Map<?, ?>) it.next();
-            if (!o.containsKey("states")) it.remove();
+    fun init() {
+        var o: Any? = RimeManager.Instance.schemaGetValue(schemaId, "schema")
+        if (o == null || o !is Map<*, *>) return
+        schema = o as Map<String, Any>
+        o = RimeManager.Instance.schemaGetValue(schemaId, "switches")
+        if (o == null || o !is List<*>) return
+        switches = o as MutableList<MutableMap<String, Any>>
+        check() // 檢查不在選單中顯示的選項
+        o = RimeManager.Instance.schemaGetValue(schemaId, "menu")
+        if (o == null || o !is HashMap<*, *>) return
+    }
+
+    fun check() {
+        if (switches.isEmpty()) return
+        val it: MutableIterator<*> = switches.iterator()
+        while (it.hasNext()) {
+            val o = it.next() as Map<*, *>
+            if (!o.containsKey("states")) it.remove()
         }
     }
 
-    public RimeCandidate[] getCandidates() {
-        if (switches.isEmpty()) return null;
-        RimeCandidate[] candidates = new RimeCandidate[switches.size()];
-        int i = 0;
-        for (Map<String, Object> o : switches) {
-            candidates[i] = new RimeCandidate();
-            final List<?> states = (List<?>) o.get("states");
-            Integer value = (Integer) o.get("value");
-            if (value == null) value = 0;
-            candidates[i].text = states.get(value).toString();
-
-            String kRightArrow = "→ ";
-            if (RimeManager.Companion.getInstance().getShowSwitchArrow())
-                candidates[i].comment =
-                        o.containsKey("options") ? "" : kRightArrow + states.get(1 - value).toString();
-            else
-                candidates[i].comment = o.containsKey("options") ? "" : states.get(1 - value).toString();
-            i++;
-        }
-        return candidates;
-    }
-
-    public void getValue() {
-        if (switches.isEmpty()) return; // 無方案
-        for (int j = 0; j < switches.size(); j++) {
-            final Map<String, Object> o = switches.get(j);
-            if (o.containsKey("options")) {
-                List<?> options = (List<?>) o.get("options");
-                for (int i = 0; i < options.size(); i++) {
-                    final String s = (String) options.get(i);
-                    if (RimeManager.Companion.getInstance().getOption(s)) {
-                        o.put("value", i);
-                        break;
-                    }
-                }
-            } else {
-                o.put("value", RimeManager.Companion.getInstance().getOption(o.get("name").toString()) ? 1 : 0);
+    val candidates: Array<RimeCandidate?>?
+        get() {
+            if (switches.isEmpty()) return null
+            val candidates = arrayOfNulls<RimeCandidate>(switches.size)
+            var i = 0
+            for (o in switches) {
+                candidates[i] = RimeCandidate()
+                val states = o["states"] as List<*>?
+                var value = o["value"] as Int?
+                if (value == null) value = 0
+                candidates[i]!!.text = states!![value].toString()
+                val kRightArrow = "→ "
+                if (RimeManager.Instance.showSwitchArrow) candidates[i]!!.comment = if (o.containsKey("options")) "" else kRightArrow + states[1 - value].toString() else candidates[i]!!.comment = if (o.containsKey("options")) "" else states[1 - value].toString()
+                i++
             }
-            switches.set(j, o);
+            return candidates
         }
-    }
 
-    public void toggleOption(int i) {
-        if (switches.isEmpty()) return;
-        Map<String, Object> o = switches.get(i);
-        Integer value = (Integer) o.get("value");
-        if (value == null) value = 0;
-        if (o.containsKey("options")) {
-            List<String> options = (List<String>) o.get("options");
-            RimeManager.Companion.getInstance().setOption(options.get(value), false);
-            value = (value + 1) % options.size();
-            RimeManager.Companion.getInstance().setOption(options.get(value), true);
-        } else {
-            value = 1 - value;
-            RimeManager.Companion.getInstance().setOption(o.get("name").toString(), value == 1);
+    // 無方案
+    val value: Unit
+        get() {
+            if (switches.isEmpty()) return  // 無方案
+            for (j in switches.indices) {
+                val o = switches[j]
+                if (o.containsKey("options")) {
+                    val options = o["options"] as List<*>?
+                    for (i in options!!.indices) {
+                        val s = options[i] as String
+                        if (RimeManager.Instance.getOption(s)) {
+                            o["value"] = i
+                            break
+                        }
+                    }
+                } else {
+                    o["value"] = if (RimeManager.Instance.getOption(o["name"].toString())) 1 else 0
+                }
+                switches[j] = o
+            }
         }
-        o.put("value", value);
-        switches.set(i, o);
+
+    fun toggleOption(i: Int) {
+        if (switches.isEmpty()) return
+        val o: MutableMap<String, Any> = switches[i]
+        var value: Int = o["value"]?.let {
+            if (it is Int) {
+                it
+            } else {
+                0
+            }
+        } ?: 0
+        if (o.containsKey("options")) {
+            val options: List<String> = o["options"]?.let {
+                if (it is List<*>) {
+                    it as List<String>
+                } else {
+                    listOf()
+                }
+            } ?: listOf()
+            RimeManager.Instance.setOption(options[value], false)
+            value = (value + 1) % options.size
+            RimeManager.Instance.setOption(options[value], true)
+        } else {
+            value = 1 - value
+            RimeManager.Instance.setOption(o["name"].toString(), value == 1)
+        }
+        o["value"] = value
+        switches[i] = o
     }
 }

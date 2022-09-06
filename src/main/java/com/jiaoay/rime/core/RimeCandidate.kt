@@ -1,17 +1,18 @@
-package com.jiaoay.rime.core;
+package com.jiaoay.rime.core
 
 /**
  * Rime候選項
  */
-public class RimeCandidate {
-    public String text;
-    public String comment;
+class RimeCandidate {
+    @JvmField
+    var text: String? = null
+    @JvmField
+    var comment: String? = null
 
-    public RimeCandidate(String text, String comment) {
-        this.text = text;
-        this.comment = comment;
+    constructor(text: String?, comment: String?) {
+        this.text = text
+        this.comment = comment
     }
 
-    public RimeCandidate() {
-    }
+    constructor() {}
 }

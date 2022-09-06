@@ -152,11 +152,11 @@ public:
         RimeCommitText = env->GetFieldID(RimeCommit, "text", "Ljava/lang/String;");
 
         RimeContext = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("com/jiaoay/rime/core/RimeContext")));
-        RimeContextDataSize = env->GetFieldID(RimeContext, "data_size", "I");
+        RimeContextDataSize = env->GetFieldID(RimeContext, "dataSize", "I");
         RimeContextComposition = env->GetFieldID(RimeContext, "composition", "Lcom/jiaoay/rime/core/RimeComposition;");
         RimeContextMenu = env->GetFieldID(RimeContext, "menu", "Lcom/jiaoay/rime/core/RimeMenu;");
-        RimeContextCommitTextPreview = env->GetFieldID(RimeContext, "commit_text_preview", "Ljava/lang/String;");
-        RimeContextSelectLabels = env->GetFieldID(RimeContext, "select_labels", "[Ljava/lang/String;");
+        RimeContextCommitTextPreview = env->GetFieldID(RimeContext, "commitTextPreview", "Ljava/lang/String;");
+        RimeContextSelectLabels = env->GetFieldID(RimeContext, "selectLabels", "[Ljava/lang/String;");
 
         RimeMenu = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("com/jiaoay/rime/core/RimeMenu")));
         RimeMenuPageSize = env->GetFieldID(RimeMenu, "page_size", "I");

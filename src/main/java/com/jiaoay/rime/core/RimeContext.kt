@@ -1,24 +1,23 @@
-package com.jiaoay.rime.core;
-
+package com.jiaoay.rime.core
 
 /**
- * Rime環境，包括 {@link RimeComposition 編碼區} 、{@link RimeMenu 候選區}
+ * Rime環境，包括 [編碼區][RimeComposition] 、[候選區][RimeMenu]
  */
-public class RimeContext {
-    int data_size;
+class RimeContext {
+    var dataSize = 0
+
     // v0.9
-    RimeComposition composition;
-    RimeMenu menu;
+    var composition: RimeComposition? = null
+    var menu: RimeMenu? = null
+
     // v0.9.2
-    String commit_text_preview;
-    String[] select_labels;
+    var commitTextPreview: String? = null
+    var selectLabels: Array<String?>? = null
 
-    public int size() {
-        if (menu == null) return 0;
-        return menu.num_candidates;
+    fun size(): Int {
+        return if (menu == null) 0 else menu?.num_candidates ?: 0
     }
 
-    public RimeCandidate[] getCandidates() {
-        return size() == 0 ? null : menu.candidates;
-    }
+    val candidates: Array<RimeCandidate?>?
+        get() = if (size() == 0) null else menu?.candidates
 }

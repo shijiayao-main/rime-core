@@ -1,10 +1,11 @@
-package com.jiaoay.rime.core;
+package com.jiaoay.rime.core
 
 /**
  * Rime上屏的字符串
  */
-public class RimeCommit {
-    int data_size;
+class RimeCommit {
+    var data_size = 0
+
     // v0.9
-    String text;
+    var text: String = ""
 }

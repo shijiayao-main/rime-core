@@ -32,81 +32,63 @@ class RimeManager private constructor() {
 
     var showSwitchArrow = false
 
-    private var rime: Rime? = null
+    var rimeListener: RimeListener? = null
+
+    private val rime: Rime by lazy {
+        Rime() { messageType, messageValue ->
+            onMessage.set(true)
+            rimeListener?.handleRimeNotification(messageType, messageValue)
+            onMessage.set(false)
+        }
+    }
 
     /////
     fun openccDictConv(src: String, dest: String, mode: Boolean) {
-        rime?.openccDictConv(src, dest, mode)
+        rime.openccDictConv(src, dest, mode)
     }
 
     fun getOpenccVersion(): String {
-        return rime?.get_opencc_version() ?: ""
+        return rime.get_opencc_version() ?: ""
     }
 
     fun getLibRimeVersion(): String {
-        return rime?.get_librime_version() ?: ""
+        return rime.get_librime_version() ?: ""
     }
 
     fun selectSchemas(schemaIdList: Array<String?>): Boolean {
-        return rime?.select_schemas(schemaIdList) ?: false
+        return rime.select_schemas(schemaIdList)
     }
 
     fun getSelectedSchemaList(): List<Map<String?, String?>?>? {
-        return rime?.get_selected_schema_list()
+        return rime.get_selected_schema_list()
     }
 
     fun getAvailableSchemaList(): List<Map<String?, String?>?>? {
-        return rime?.get_available_schema_list()
+        return rime.get_available_schema_list()
     }
 
     fun schemaGetValue(name: String, key: String): Any? {
-        return rime?.schema_get_value(name, key)
+        return rime.schema_get_value(name, key)
     }
 
     fun configGetMap(name: String, key: String): Map<String?, Map<String?, *>?>? {
-        return rime?.config_get_map(name = name, key = key)
+        return rime.config_get_map(name = name, key = key)
     }
 
     fun getKeycodeByName(name: String): Int {
-        return rime?.get_keycode_by_name(name) ?: 0
+        return rime.get_keycode_by_name(name)
     }
 
     fun deployConfigFile(fileName: String, versionKey: String) {
-        rime?.deploy_config_file(fileName, versionKey)
+        rime.deploy_config_file(fileName, versionKey)
     }
 
     fun getUserDataDir(): String {
-        return rime?.get_user_data_dir() ?: ""
+        return rime.get_user_data_dir()
     }
     //////
 
-    private val rimeCallback: (String, String) -> Unit = { messageType, messageValue ->
-        onMessage.set(true)
-        // TODO: 找到入口之后再加
-//        val event = RimeEvent.create(messageType, messageValue)
-//        // Timber.i("message: [%s] %s", message_type, message_value);
-//        val rimeInputMethodEditorService: RimeInputMethodEditorService = RimeInputMethodEditorService.getService()
-//        if (event is RimeEvent.SchemaEvent) {
-//            initSchema()
-//            IMEExtensionsKt.initKeyboard(rimeInputMethodEditorService)
-//        } else if (event is RimeEvent.OptionEvent) {
-//            getStatus()
-//            // 切換中英文、簡繁體時更新候選
-//            getContexts()
-//            val value = !messageValue.startsWith("!")
-//            val option = messageValue.substring(if (value) 0 else 1)
-//            rimeInputMethodEditorService.getTextInputManager().onOptionChanged(option, value)
-//        }
-        onMessage.set(false)
-    }
-
-    fun initRime(fullCheck: Boolean = false) {
-        val rime: Rime = this.rime ?: let {
-            Rime(callback = rimeCallback).apply {
-                this@RimeManager.rime = this
-            }
-        }
-
+    fun syncRime(fullCheck: Boolean = false) {
         onMessage.set(false)
         val appPrefs = AppPrefs.defaultInstance()
         val sharedDataDir = appPrefs.profile.sharedDataDir
@@ -127,14 +109,10 @@ class RimeManager private constructor() {
 
 
     fun syncUserData(): Boolean {
-        rime?.let {
-            val result = it.sync_user_data()
-            destroyRime()
-            initRime(true)
-            return result
-        }
-        initRime(true)
-        return true
+        val result = rime.sync_user_data()
+        destroyRime()
+        syncRime(true)
+        return result
     }
 
     fun getCommitText(): String {
@@ -142,13 +120,13 @@ class RimeManager private constructor() {
     }
 
     fun getCommit(): Boolean {
-        return rime?.get_commit(rimeCommit) ?: false
+        return rime.get_commit(rimeCommit)
     }
 
     // get_context() 是耗时操作
-    suspend fun getContexts(): Boolean {
-        // get_context() 是耗时操作
-        rime?.get_context(rimeContext)
+    fun getContexts(): Boolean {
+        // TODO: get_context() 是耗时操作
+        rime.get_context(rimeContext)
         return getStatus()
     }
 
@@ -157,15 +135,15 @@ class RimeManager private constructor() {
     }
 
     fun hasMenu(): Boolean {
-        return isComposing && rimeContext.menu.num_candidates != 0
+        return isComposing && rimeContext.menu?.num_candidates != 0
     }
 
     fun hasLeft(): Boolean {
-        return hasMenu() && rimeContext.menu.page_no != 0
+        return hasMenu() && rimeContext.menu?.page_no != 0
     }
 
     fun hasRight(): Boolean {
-        return hasMenu() && !rimeContext.menu.is_last_page
+        return hasMenu() && rimeContext.menu?.is_last_page != true
     }
 
     val isPaging: Boolean
@@ -185,47 +163,44 @@ class RimeManager private constructor() {
     }
 
     val composition: RimeComposition?
-        get() = if (rimeContext == null) null else rimeContext.composition
+        get() = rimeContext.composition
 
     val compositionText: String
         get() {
-            val composition = composition
-            return if (composition == null || composition.preedit == null) "" else composition.preedit
+            return composition?.preedit?:""
         }
 
     fun getComposingText(): String {
-        return if (rimeContext.commit_text_preview == null) {
+        return if (rimeContext.commitTextPreview == null) {
             ""
         } else {
-            rimeContext.commit_text_preview
+            rimeContext.commitTextPreview ?: ""
         }
     }
 
     fun initSchema() {
-        rimeSchemaList = rime?.get_schema_list()
+        rimeSchemaList = rime.get_schema_list()
         rimeSchema = RimeSchema(schemaId)
         getStatus()
     }
 
     fun getStatus(): Boolean {
-        rimeSchema?.getValue()
-        return rime?.get_status(rimeStatus) ?: false
+        rimeSchema?.value
+        return rime.get_status(rimeStatus)
     }
 
     fun destroyRime() {
-        rime?.destroy_session()
-        rime?.finalize1()
+        rime.destroy_session()
+        rime.finalize1()
     }
 
 
     fun check(full_check: Boolean) {
-        rime?.let {
-            if (
-                it.start_maintenance(full_check) &&
-                it.is_maintenance_mode()
-            ) {
-                it.join_maintenance_thread()
-            }
+        if (
+            rime.start_maintenance(full_check) &&
+            rime.is_maintenance_mode()
+        ) {
+            rime.join_maintenance_thread()
         }
     }
 
@@ -233,7 +208,7 @@ class RimeManager private constructor() {
         if (!TextUtils.isEmpty(name)) {
             val f = File(DataManager.getDataDir("opencc"), name)
             if (f.exists()) {
-                return rime?.opencc_convert(line, f.absolutePath) ?: ""
+                return rime.opencc_convert(line, f.absolutePath) ?: ""
             }
         }
         return line
@@ -241,21 +216,21 @@ class RimeManager private constructor() {
 
 
     fun rimeGetInput(): String {
-        return rime?.get_input() ?: ""
+        return rime.get_input() ?: ""
     }
 
     fun rimeGetCaretPos(): Int {
-        return rime?.get_caret_pos() ?: 0
+        return rime.get_caret_pos()
     }
 
     fun rimeSetCaretPos(caret_pos: Int) {
-        rime?.set_caret_pos(caret_pos)
+        rime.set_caret_pos(caret_pos)
         runBlocking {
             getContexts()
         }
     }
 
-    suspend fun selectSchema(id: Int): Boolean {
+    fun selectSchema(id: Int): Boolean {
         rimeSchemaList?.let { list ->
             val n = list.size
             if (id < 0 || id >= n) return false
@@ -272,7 +247,6 @@ class RimeManager private constructor() {
 
 
     private fun overWriteSchema(schema_id: String, map: MutableMap<String, String>): Boolean {
-        val rime: Rime = this.rime ?: return false
         val file = File(
             rime.get_user_data_dir() + File.separator + "build",
             "$schema_id.schema.yaml"
@@ -281,7 +255,7 @@ class RimeManager private constructor() {
             val `in` = FileReader(file)
             val bufIn = BufferedReader(`in`)
             val tempStream = CharArrayWriter()
-            var line: String? = null
+            var line: String?
             read@ while (bufIn.readLine().also { line = it } != null) {
                 for (k in map.keys) {
                     val key = "$k: "
@@ -311,34 +285,30 @@ class RimeManager private constructor() {
     fun applySchemaChange() {
         // 实测直接select_schema(schema_id)方案没有重新载入，切换到不存在的方案，再切回去（会产生1秒的额外耗时）.需要找到更好的方法
         // 不发生覆盖则不生效
-        rime?.let {
-            if (overWriteSchema(schemaId)) {
-                it.select_schema("null")
-                it.select_schema(schemaId)
-            }
-            runBlocking {
-                getContexts()
-            }
+        if (overWriteSchema(schemaId)) {
+            rime.select_schema("null")
+            rime.select_schema(schemaId)
         }
+        getContexts()
     }
 
 
     fun isVoidKeycode(keycode: Int): Boolean {
-        val XK_VoidSymbol = 0xffffff
-        return keycode <= 0 || keycode == XK_VoidSymbol
+        val voidSymbol = 0xffffff
+        return keycode <= 0 || keycode == voidSymbol
     }
 
     // KeyProcess 调用JNI方法发送keycode和mask
-    private suspend fun onKey(keycode: Int, mask: Int): Boolean {
+    private fun onKey(keycode: Int, mask: Int): Boolean {
         if (isVoidKeycode(keycode)) return false
         // 此处调用native方法是耗时操作
-        val b = rime?.process_key(keycode, mask) ?: false
+        val b = rime.process_key(keycode, mask)
         getContexts()
         return b
     }
 
     // KeyProcess 调用JNI方法发送keycode和mask
-    suspend fun onKey(event: IntArray?): Boolean {
+    fun onKey(event: IntArray?): Boolean {
         return if (event != null && event.size == 2) {
             onKey(event[0], event[1])
         } else {
@@ -352,22 +322,22 @@ class RimeManager private constructor() {
         return ch in 0x20..0x7f
     }
 
-    suspend fun onText(text: CharSequence): Boolean {
+    fun onText(text: CharSequence): Boolean {
         if (!isValidText(text)) return false
-        val b = rime?.simulate_key_sequence(text.toString().replace("{}", "{braceleft}{braceright}")) ?: false
+        val b = rime.simulate_key_sequence(text.toString().replace("{}", "{braceleft}{braceright}"))
         getContexts()
         return b
     }
 
-    fun getCandidates(): Array<RimeCandidate> {
+    fun getCandidates(): Array<RimeCandidate?> {
         return if (!isComposing && showSwitches) {
             rimeSchema?.candidates ?: arrayOf()
         } else {
-            rimeContext.candidates
+            rimeContext.candidates?: arrayOf()
         }
     }
 
-    val candidatesWithoutSwitch: Array<RimeCandidate>?
+    val candidatesWithoutSwitch: Array<RimeCandidate?>?
         get() = if (isComposing) {
             rimeContext.candidates
         } else {
@@ -377,12 +347,16 @@ class RimeManager private constructor() {
     val selectLabels: Array<String?>?
         get() {
             if (rimeContext.size() > 0) {
-                if (rimeContext.select_labels != null) return rimeContext.select_labels
-                if (rimeContext.menu.select_keys != null) return rimeContext.menu.select_keys.split("\\B".toRegex())
-                    .dropLastWhile {
-                        it.isEmpty()
-                    }
-                    .toTypedArray()
+                rimeContext.selectLabels?.let {
+                    return it
+                }
+                rimeContext.menu?.select_keys?.let {
+                    return it.split("\\B".toRegex())
+                        .dropLastWhile {
+                            it.isEmpty()
+                        }
+                        .toTypedArray()
+                }
                 val n = rimeContext.size()
                 val labels = arrayOfNulls<String>(n)
                 for (i in 0 until n) {
@@ -395,27 +369,27 @@ class RimeManager private constructor() {
 
     fun getCandHighlightIndex(): Int {
         return if (isComposing) {
-            rimeContext.menu.highlighted_candidate_index
+            rimeContext.menu?.highlighted_candidate_index ?: -1
         } else {
             -1
         }
     }
 
 
-    suspend fun commitComposition(): Boolean {
-        val b = rime?.commit_composition() ?: false
+    fun commitComposition(): Boolean {
+        val b = rime.commit_composition()
         getContexts()
         return b
     }
 
-    suspend fun clearComposition() {
-        rime?.clear_composition()
+    fun clearComposition() {
+        rime.clear_composition()
         getContexts()
     }
 
     fun selectCandidate(index: Int): Boolean {
         // TODO: 之后再改
-        val b = rime?.select_candidate_on_current_page(index) ?: false
+        val b = rime.select_candidate_on_current_page(index)
         runBlocking {
             getContexts()
         }
@@ -424,7 +398,7 @@ class RimeManager private constructor() {
 
     fun deleteCandidate(index: Int): Boolean {
         // TODO: 之后再改
-        val b = rime?.delete_candidate_on_current_page(index) ?: false
+        val b = rime.delete_candidate_on_current_page(index)
         runBlocking {
             getContexts()
         }
@@ -433,11 +407,11 @@ class RimeManager private constructor() {
 
     fun setOption(option: String?, value: Boolean) {
         if (onMessage.get()) return
-        rime?.set_option(option, value)
+        rime.set_option(option, value)
     }
 
     fun getOption(option: String?): Boolean {
-        return rime?.get_option(option) ?: false
+        return rime.get_option(option)
     }
 
     fun toggleOption(option: String?) {
@@ -451,15 +425,15 @@ class RimeManager private constructor() {
 
     fun setProperty(prop: String?, value: String?) {
         if (onMessage.get()) return
-        rime?.set_property(prop, value)
+        rime.set_property(prop, value)
     }
 
     fun getProperty(prop: String?): String {
-        return rime?.get_property(prop) ?: ""
+        return rime.get_property(prop)
     }
 
     val schemaId: String
-        get() = rime?.get_current_schema() ?: ""
+        get() = rime.get_current_schema()
 
     val isEmpty: Boolean
         get() {
@@ -495,9 +469,9 @@ class RimeManager private constructor() {
     val schemaName: String
         get() = rimeStatus.schema_name
 
-    private suspend fun selectSchema(schema_id: String?): Boolean {
-        overWriteSchema(schema_id)
-        val b = rime?.select_schema(schema_id) ?: false
+    private fun selectSchema(schemaId: String): Boolean {
+        overWriteSchema(schemaId)
+        val b = rime.select_schema(schemaId)
         getContexts()
         return b
     }
@@ -505,7 +479,7 @@ class RimeManager private constructor() {
     // 临时修改scheme文件参数
     // 临时修改build后的scheme可以避免build过程的耗时
     // 另外实际上jni读入yaml、修改、导出的效率并不高
-    private fun overWriteSchema(schema_id: String?): Boolean {
+    private fun overWriteSchema(schemaId: String): Boolean {
         val map: MutableMap<String, String> = HashMap()
         val pageSize = AppPrefs.defaultInstance().keyboard.candidatePageSize
         if (pageSize != "0") {
@@ -523,7 +497,6 @@ class RimeManager private constructor() {
      * @return
      */
     fun deployConfigFile(name: String, skipIfExists: Boolean): Boolean {
-        val rime: Rime = this.rime ?: return false
         val fileName = "$name.yaml"
         if (skipIfExists) {
             val f = File(rime.get_user_data_dir() + File.separator + "build", fileName)
@@ -545,26 +518,26 @@ class RimeManager private constructor() {
      * https://github.com/rime/librime/blob/master/src/rime/key_table.cc
      */
     fun metaShiftOn(): Int {
-        return rime?.get_modifier_by_name("Shift") ?: 0
+        return rime.get_modifier_by_name("Shift")
     }
 
     fun metaCtrlOn(): Int {
-        return rime?.get_modifier_by_name("Control") ?: 0
+        return rime.get_modifier_by_name("Control")
     }
 
     fun metaAltOn(): Int {
-        return rime?.get_modifier_by_name("Alt") ?: 0
+        return rime.get_modifier_by_name("Alt")
     }
 
     fun metaSymOn(): Int {
-        return rime?.get_modifier_by_name("Super") ?: 0
+        return rime.get_modifier_by_name("Super")
     }
 
     fun metaMetaOn(): Int {
-        return rime?.get_modifier_by_name("Meta") ?: 0
+        return rime.get_modifier_by_name("Meta")
     }
 
     fun metaReleaseOn(): Int {
-        return rime?.get_modifier_by_name("Release") ?: 0
+        return rime.get_modifier_by_name("Release")
     }
 }
