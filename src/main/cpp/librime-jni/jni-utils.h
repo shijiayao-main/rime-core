@@ -134,40 +134,40 @@ public:
         BooleanInit = env->GetMethodID(Boolean, "<init>", "(Z)V");
 
         Rime = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("com/jiaoay/rime/core/Rime")));
-        HandleRimeNotification = env->GetStaticMethodID(Rime, "handleRimeNotification", "(Ljava/lang/String;Ljava/lang/String;)V");
+        HandleRimeNotification = env->GetMethodID(Rime, "handleRimeNotification", "(Ljava/lang/String;Ljava/lang/String;)V");
 
-        RimeComposition = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("com/jiaoay/rime/core/Rime$RimeComposition")));
+        RimeComposition = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("com/jiaoay/rime/core/RimeComposition")));
         RimeCompositionLength = env->GetFieldID(RimeComposition, "length", "I");
         RimeCompositionCursorPos = env->GetFieldID(RimeComposition, "cursor_pos", "I");
         RimeCompositionSelStart = env->GetFieldID(RimeComposition, "sel_start", "I");
         RimeCompositionSelEnd = env->GetFieldID(RimeComposition, "sel_end", "I");
         RimeCompositionPreedit = env->GetFieldID(RimeComposition, "preedit", "Ljava/lang/String;");
 
-        RimeCandidate = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("com/jiaoay/rime/core/Rime$RimeCandidate")));
+        RimeCandidate = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("com/jiaoay/rime/core/RimeCandidate")));
         RimeCandidateText = env->GetFieldID(RimeCandidate, "text", "Ljava/lang/String;");
         RimeCandidateComment = env->GetFieldID(RimeCandidate, "comment", "Ljava/lang/String;");
 
-        RimeCommit = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("com/jiaoay/rime/core/Rime$RimeCommit")));
+        RimeCommit = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("com/jiaoay/rime/core/RimeCommit")));
         RimeCommitDataSize = env->GetFieldID(RimeCommit, "data_size", "I");
         RimeCommitText = env->GetFieldID(RimeCommit, "text", "Ljava/lang/String;");
 
-        RimeContext = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("com/jiaoay/rime/core/Rime$RimeContext")));
+        RimeContext = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("com/jiaoay/rime/core/RimeContext")));
         RimeContextDataSize = env->GetFieldID(RimeContext, "data_size", "I");
-        RimeContextComposition = env->GetFieldID(RimeContext, "composition", "Lcom/jiaoay/rime/core/Rime$RimeComposition;");
-        RimeContextMenu = env->GetFieldID(RimeContext, "menu", "Lcom/jiaoay/rime/core/Rime$RimeMenu;");
+        RimeContextComposition = env->GetFieldID(RimeContext, "composition", "Lcom/jiaoay/rime/core/RimeComposition;");
+        RimeContextMenu = env->GetFieldID(RimeContext, "menu", "Lcom/jiaoay/rime/core/RimeMenu;");
         RimeContextCommitTextPreview = env->GetFieldID(RimeContext, "commit_text_preview", "Ljava/lang/String;");
         RimeContextSelectLabels = env->GetFieldID(RimeContext, "select_labels", "[Ljava/lang/String;");
 
-        RimeMenu = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("com/jiaoay/rime/core/Rime$RimeMenu")));
+        RimeMenu = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("com/jiaoay/rime/core/RimeMenu")));
         RimeMenuPageSize = env->GetFieldID(RimeMenu, "page_size", "I");
         RimeMenuPageNo = env->GetFieldID(RimeMenu, "page_no", "I");
         RimeMenuIsLastPage = env->GetFieldID(RimeMenu, "is_last_page", "Z");
         RimeMenuHighlightedCandidateIndex = env->GetFieldID(RimeMenu, "highlighted_candidate_index", "I");
         RimeMenuNumCandidates = env->GetFieldID(RimeMenu, "num_candidates", "I");
-        RimeMenuCandidates = env->GetFieldID(RimeMenu, "candidates", "[Lcom/jiaoay/rime/core/Rime$RimeCandidate;");
+        RimeMenuCandidates = env->GetFieldID(RimeMenu, "candidates", "[Lcom/jiaoay/rime/core/RimeCandidate;");
         RimeMenuSelectKeys = env->GetFieldID(RimeMenu, "select_keys", "Ljava/lang/String;");
 
-        RimeStatus = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("com/jiaoay/rime/core/Rime$RimeStatus")));
+        RimeStatus = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("com/jiaoay/rime/core/RimeStatus")));
         RimeStatusDataSize = env->GetFieldID(RimeStatus, "data_size", "I");
         RimeStatusSchemaId = env->GetFieldID(RimeStatus, "schema_id", "Ljava/lang/String;");
         RimeStatusSchemaName = env->GetFieldID(RimeStatus, "schema_name", "Ljava/lang/String;");

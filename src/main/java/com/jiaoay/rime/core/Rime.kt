@@ -22,7 +22,11 @@ package com.jiaoay.rime.core
  *
  * @see [Rime](https://github.com/rime/librime) [OpenCC](https://github.com/BYVoid/OpenCC)
  */
-internal class Rime(var callback: ((String, String) -> Unit)?) {
+class Rime(var callback: ((String, String) -> Unit)?) {
+
+    init {
+        System.loadLibrary("rime")
+    }
 
     fun handleRimeNotification(message_type: String?, message_value: String) {
         callback?.invoke(message_type ?: "", message_value)
@@ -174,7 +178,7 @@ internal class Rime(var callback: ((String, String) -> Unit)?) {
 
     external fun get_selected_schema_list(): List<Map<String?, String?>?>?
 
-    external fun select_schemas(schema_id_list: Array<String?>?): Boolean
+    external fun select_schemas(schema_id_list: Array<String?>): Boolean
 
     // opencc
     external fun get_opencc_version(): String?

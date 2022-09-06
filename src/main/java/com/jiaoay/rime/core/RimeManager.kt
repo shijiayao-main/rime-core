@@ -1,6 +1,5 @@
 package com.jiaoay.rime.core
 
-import android.content.Context
 import android.text.TextUtils
 import com.jiaoay.rime.data.AppPrefs
 import com.jiaoay.rime.data.DataManager
@@ -22,10 +21,6 @@ class RimeManager private constructor() {
         }
     }
 
-    init {
-        System.loadLibrary("rime")
-    }
-
     private val rimeCommit = RimeCommit()
     private val rimeContext: RimeContext = RimeContext()
     private val rimeStatus = RimeStatus()
@@ -40,6 +35,25 @@ class RimeManager private constructor() {
     private var rime: Rime? = null
 
     /////
+    fun getOpenccVersion(): String {
+        return rime?.get_opencc_version() ?: ""
+    }
+
+    fun getLibRimeVersion(): String {
+        return rime?.get_librime_version() ?: ""
+    }
+
+    fun selectSchemas(schemaIdList: Array<String?>): Boolean {
+        return rime?.select_schemas(schemaIdList) ?: false
+    }
+
+    fun getSelectedSchemaList(): List<Map<String?, String?>?>? {
+        return rime?.get_selected_schema_list()
+    }
+
+    fun getAvailableSchemaList(): List<Map<String?, String?>?>? {
+        return rime?.get_available_schema_list()
+    }
 
     fun schemaGetValue(name: String, key: String): Any? {
         return rime?.schema_get_value(name, key)
@@ -108,7 +122,7 @@ class RimeManager private constructor() {
     }
 
 
-    fun syncUserData(context: Context?): Boolean {
+    fun syncUserData(): Boolean {
         rime?.let {
             val result = it.sync_user_data()
             destroyRime()
@@ -230,9 +244,11 @@ class RimeManager private constructor() {
         return rime?.get_caret_pos() ?: 0
     }
 
-    suspend fun rimeSetCaretPos(caret_pos: Int) {
+    fun rimeSetCaretPos(caret_pos: Int) {
         rime?.set_caret_pos(caret_pos)
-        getContexts()
+        runBlocking {
+            getContexts()
+        }
     }
 
     suspend fun selectSchema(id: Int): Boolean {
@@ -288,7 +304,7 @@ class RimeManager private constructor() {
 
 
     // 刷新当前输入方案
-    suspend fun applySchemaChange() {
+    fun applySchemaChange() {
         // 实测直接select_schema(schema_id)方案没有重新载入，切换到不存在的方案，再切回去（会产生1秒的额外耗时）.需要找到更好的方法
         // 不发生覆盖则不生效
         rime?.let {
@@ -296,7 +312,9 @@ class RimeManager private constructor() {
                 it.select_schema("null")
                 it.select_schema(schemaId)
             }
-            getContexts()
+            runBlocking {
+                getContexts()
+            }
         }
     }
 

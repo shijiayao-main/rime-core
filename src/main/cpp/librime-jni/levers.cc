@@ -8,7 +8,7 @@ static RimeLeversApi* get_levers() {
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_jiaoay_rime_core_Rime_customize_1bool(JNIEnv *env, jclass /* thiz */, jstring name, jstring key, jboolean value) {
+Java_com_jiaoay_rime_core_Rime_customize_1bool(JNIEnv *env, jobject thiz, jstring name, jstring key, jboolean value) {
   RimeLeversApi* levers = get_levers();
   const char* s = env->GetStringUTFChars(name, nullptr);
   RimeCustomSettings* settings = levers->custom_settings_init(s, TAG);
@@ -25,7 +25,7 @@ Java_com_jiaoay_rime_core_Rime_customize_1bool(JNIEnv *env, jclass /* thiz */, j
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_jiaoay_rime_core_Rime_customize_1int(JNIEnv *env, jclass /* thiz */, jstring name, jstring key, jint value) {
+Java_com_jiaoay_rime_core_Rime_customize_1int(JNIEnv *env, jobject thiz, jstring name, jstring key, jint value) {
   RimeLeversApi* levers = get_levers();
   const char* s = env->GetStringUTFChars(name, nullptr);
   RimeCustomSettings* settings = levers->custom_settings_init(s, TAG);
@@ -42,7 +42,7 @@ Java_com_jiaoay_rime_core_Rime_customize_1int(JNIEnv *env, jclass /* thiz */, js
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_jiaoay_rime_core_Rime_customize_1double(JNIEnv *env, jclass /* thiz */, jstring name, jstring key, jdouble value) {
+Java_com_jiaoay_rime_core_Rime_customize_1double(JNIEnv *env, jobject thiz, jstring name, jstring key, jdouble value) {
   RimeLeversApi* levers = get_levers();
   const char* s = env->GetStringUTFChars(name, nullptr);
   RimeCustomSettings* settings = levers->custom_settings_init(s, TAG);
@@ -59,7 +59,7 @@ Java_com_jiaoay_rime_core_Rime_customize_1double(JNIEnv *env, jclass /* thiz */,
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_jiaoay_rime_core_Rime_customize_1string(JNIEnv *env, jclass /* thiz */, jstring name, jstring key, jstring value) {
+Java_com_jiaoay_rime_core_Rime_customize_1string(JNIEnv *env, jobject thiz, jstring name, jstring key, jstring value) {
   RimeLeversApi* levers = get_levers();
   const char* s = env->GetStringUTFChars(name, nullptr);
   RimeCustomSettings* settings = levers->custom_settings_init(s, TAG);
@@ -125,7 +125,7 @@ jobject rimeSchemaListToJObject(JNIEnv *env, RimeSchemaList* list) {
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_com_jiaoay_rime_core_Rime_get_1available_1schema_1list(JNIEnv *env, jclass /* thiz */) {
+Java_com_jiaoay_rime_core_Rime_get_1available_1schema_1list(JNIEnv *env, jobject thiz) {
   RimeLeversApi* api_ = get_levers();
   RimeSwitcherSettings* settings_ = api_->switcher_settings_init();
   RimeSchemaList list = {0};
@@ -142,7 +142,7 @@ Java_com_jiaoay_rime_core_Rime_get_1available_1schema_1list(JNIEnv *env, jclass 
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_com_jiaoay_rime_core_Rime_get_1selected_1schema_1list(JNIEnv *env, jclass /* thiz */) {
+Java_com_jiaoay_rime_core_Rime_get_1selected_1schema_1list(JNIEnv *env, jobject thiz) {
   RimeLeversApi* api_ = get_levers();
   RimeSwitcherSettings* settings_ = api_->switcher_settings_init();
   RimeSchemaList list = {0};
@@ -159,7 +159,7 @@ Java_com_jiaoay_rime_core_Rime_get_1selected_1schema_1list(JNIEnv *env, jclass /
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_jiaoay_rime_core_Rime_select_1schemas(JNIEnv *env, jclass /* thiz */, jobjectArray stringArray) {
+Java_com_jiaoay_rime_core_Rime_select_1schemas(JNIEnv *env, jobject thiz, jobjectArray stringArray) {
   if (stringArray == nullptr) return false;
   int count = env->GetArrayLength(stringArray);
   if (count == 0) return false;

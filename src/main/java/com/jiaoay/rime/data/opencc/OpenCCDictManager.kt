@@ -11,7 +11,7 @@ import kotlin.system.measureTimeMillis
 
 object OpenCCDictManager {
     init {
-        System.loadLibrary("rime_jni")
+        System.loadLibrary("rime")
     }
 
     private val openccDictDir = File(

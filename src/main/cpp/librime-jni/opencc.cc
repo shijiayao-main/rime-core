@@ -10,13 +10,13 @@ using std::string;
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_com_jiaoay_rime_core_Rime_get_1opencc_1version(JNIEnv *env, jclass thiz) {
+Java_com_jiaoay_rime_core_Rime_get_1opencc_1version(JNIEnv *env, jobject thiz) {
   return env->NewStringUTF(OPENCC_VERSION);
 }
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_com_jiaoay_rime_core_Rime_opencc_1convert(JNIEnv *env, jclass thiz, jstring line, jstring name) {
+Java_com_jiaoay_rime_core_Rime_opencc_1convert(JNIEnv *env, jobject thiz, jstring line, jstring name) {
   if (name == NULL) return line;
   const char* s = env->GetStringUTFChars(name, NULL);
   string str(s);
@@ -31,7 +31,7 @@ Java_com_jiaoay_rime_core_Rime_opencc_1convert(JNIEnv *env, jclass thiz, jstring
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_jiaoay_rime_core_Rime_opencc_1convert_1dictionary(JNIEnv *env, jclass thiz, jstring jinputFileName,
+Java_com_jiaoay_rime_core_Rime_opencc_1convert_1dictionary(JNIEnv *env, jobject thiz, jstring jinputFileName,
     jstring joutputFileName, jstring jformatFrom, jstring jformatTo) {
   const char* s = env->GetStringUTFChars(jinputFileName, NULL);
   string inputFileName(s);
