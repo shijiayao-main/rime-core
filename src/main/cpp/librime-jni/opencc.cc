@@ -52,7 +52,7 @@ Java_com_jiaoay_rime_core_Rime_opencc_1convert_1dictionary(JNIEnv *env, jobject 
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_jiaoay_rime_core_Rime_openccDictConv(JNIEnv *env, jclass clazz,
+Java_com_jiaoay_rime_core_Rime_openccDictConv(JNIEnv *env, jobject clazz,
                                                                    jstring src, jstring dest,
                                                                    jboolean mode) {
   using namespace opencc;

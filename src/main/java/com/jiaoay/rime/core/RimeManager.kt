@@ -35,10 +35,12 @@ class RimeManager private constructor() {
     var rimeListener: RimeListener? = null
 
     private val rime: Rime by lazy {
-        Rime() { messageType, messageValue ->
-            onMessage.set(true)
-            rimeListener?.handleRimeNotification(messageType, messageValue)
-            onMessage.set(false)
+        Rime().apply {
+            notificationCallback = { messageType, messageValue ->
+                onMessage.set(true)
+                rimeListener?.handleRimeNotification(messageType, messageValue)
+                onMessage.set(false)
+            }
         }
     }
 
@@ -167,7 +169,7 @@ class RimeManager private constructor() {
 
     val compositionText: String
         get() {
-            return composition?.preedit?:""
+            return composition?.preedit ?: ""
         }
 
     fun getComposingText(): String {
@@ -333,7 +335,7 @@ class RimeManager private constructor() {
         return if (!isComposing && showSwitches) {
             rimeSchema?.candidates ?: arrayOf()
         } else {
-            rimeContext.candidates?: arrayOf()
+            rimeContext.candidates ?: arrayOf()
         }
     }
 

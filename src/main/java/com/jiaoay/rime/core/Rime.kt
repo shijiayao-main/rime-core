@@ -22,14 +22,16 @@ package com.jiaoay.rime.core
  *
  * @see [Rime](https://github.com/rime/librime) [OpenCC](https://github.com/BYVoid/OpenCC)
  */
-class Rime(var handleRimeNotification: ((String, String) -> Unit)?) {
+class Rime {
+
+    var notificationCallback: ((String, String) -> Unit)? = null
 
     init {
         System.loadLibrary("rime")
     }
 
-    fun handleRimeNotification(message_type: String?, message_value: String) {
-        handleRimeNotification?.invoke(message_type ?: "", message_value)
+    fun handleRimeNotification(message_type: String?, message_value: String?) {
+        notificationCallback?.invoke(message_type ?: "", message_value ?: "")
     }
 
     // init
