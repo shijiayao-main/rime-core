@@ -134,7 +134,7 @@ public:
         BooleanInit = env->GetMethodID(Boolean, "<init>", "(Z)V");
 
         Rime = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("com/jiaoay/rime/core/Rime")));
-        HandleRimeNotification = env->GetMethodID(Rime, "handleRimeNotification", "(Ljava/lang/String;Ljava/lang/String;)V");
+        HandleRimeNotification = env->GetStaticMethodID(Rime, "handleRimeNotification", "(Ljava/lang/String;Ljava/lang/String;)V");
 
         RimeComposition = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("com/jiaoay/rime/core/RimeComposition")));
         RimeCompositionLength = env->GetFieldID(RimeComposition, "length", "I");

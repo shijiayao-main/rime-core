@@ -35,7 +35,7 @@ Java_com_jiaoay_rime_core_Rime_set_1notification_1handler(JNIEnv *env, jobject t
         ALOGI("HandleRimeNotification");
         if (activated_session_id == 0) return;
         auto env = GlobalRef->AttachEnv();
-        env->CallVoidMethod(GlobalRef->Rime, GlobalRef->HandleRimeNotification,
+        env->CallStaticVoidMethod(GlobalRef->Rime, GlobalRef->HandleRimeNotification,
                                   *JString(env, message_type),
                                   *JString(env, message_value));
     };

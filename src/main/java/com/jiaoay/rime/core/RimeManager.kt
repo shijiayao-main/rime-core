@@ -35,12 +35,14 @@ class RimeManager private constructor() {
     var rimeListener: RimeListener? = null
 
     private val rime: Rime by lazy {
-        Rime().apply {
-            notificationCallback = { messageType, messageValue ->
-                onMessage.set(true)
-                rimeListener?.handleRimeNotification(messageType, messageValue)
-                onMessage.set(false)
-            }
+        Rime()
+    }
+
+    init {
+        Rime.notificationCallback = { messageType, messageValue ->
+            onMessage.set(true)
+            rimeListener?.handleRimeNotification(messageType, messageValue)
+            onMessage.set(false)
         }
     }
 
