@@ -3,8 +3,11 @@
 #include <jni.h>
 
 extern void rime_require_module_lua();
+
 extern void rime_require_module_charcode();
+
 extern void rime_require_module_octagram();
+
 // librime is compiled as a static library, we have to link modules explicitly
 static void declare_librime_module_dependencies() {
     rime_require_module_lua();
@@ -13,21 +16,23 @@ static void declare_librime_module_dependencies() {
 }
 
 JNIEXPORT jint JNICALL
-JNI_OnLoad(JavaVM* jvm, void* reserved)
-{
+JNI_OnLoad(JavaVM *jvm, void *reserved) {
     GlobalRef = new GlobalRefSingleton(jvm);
     declare_librime_module_dependencies();
     return JNI_VERSION_1_6;
 }
 
-static jobject rimeConfigValueToJObject(JNIEnv *env, RimeConfig* config, const char* key);
+static jobject rimeConfigValueToJObject(JNIEnv *env, RimeConfig *config, const char *key);
+
 static RimeSessionId activated_session_id = 0;
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_jiaoay_rime_core_Rime_set_1notification_1handler(JNIEnv *env, jobject thiz) { //TODO
+    ALOGI("set notification handler");
     auto handler = [](void *context_object, RimeSessionId session_id,
                       const char *message_type, const char *message_value) {
+        ALOGI("HandleRimeNotification");
         if (activated_session_id == 0) return;
         auto env = GlobalRef->AttachEnv();
         env->CallVoidMethod(GlobalRef->Rime, GlobalRef->HandleRimeNotification,
@@ -39,8 +44,8 @@ Java_com_jiaoay_rime_core_Rime_set_1notification_1handler(JNIEnv *env, jobject t
 
 void init_traits(JNIEnv *env, jstring shared_data_dir, jstring user_data_dir, void (*func)(RimeTraits *)) {
     RIME_STRUCT(RimeTraits, traits);
-    const char* p_shared_data_dir = shared_data_dir == nullptr ? nullptr : env->GetStringUTFChars(shared_data_dir, nullptr);
-    const char* p_user_data_dir = user_data_dir == nullptr ? nullptr : env->GetStringUTFChars(user_data_dir, nullptr);
+    const char *p_shared_data_dir = shared_data_dir == nullptr ? nullptr : env->GetStringUTFChars(shared_data_dir, nullptr);
+    const char *p_user_data_dir = user_data_dir == nullptr ? nullptr : env->GetStringUTFChars(user_data_dir, nullptr);
     traits.shared_data_dir = p_shared_data_dir;
     traits.user_data_dir = p_user_data_dir;
     traits.app_name = "com.jiaoay.rime";
@@ -72,7 +77,7 @@ Java_com_jiaoay_rime_core_Rime_finalize1(JNIEnv *env, jobject clazz) {
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_jiaoay_rime_core_Rime_start_1maintenance(JNIEnv *env, jobject clazz, jboolean full_check) {
-    return RimeStartMaintenance((Bool)full_check);
+    return RimeStartMaintenance((Bool) full_check);
 }
 
 extern "C"
@@ -109,7 +114,7 @@ Java_com_jiaoay_rime_core_Rime_deploy(JNIEnv *env, jobject clazz) {
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_jiaoay_rime_core_Rime_deploy_1schema(JNIEnv *env, jobject clazz, jstring schema_file) {
-    const char* s = schema_file == nullptr ? nullptr : env->GetStringUTFChars(schema_file, nullptr);
+    const char *s = schema_file == nullptr ? nullptr : env->GetStringUTFChars(schema_file, nullptr);
     bool b = RimeDeploySchema(s);
     env->ReleaseStringUTFChars(schema_file, s);
     return b;
@@ -118,8 +123,8 @@ Java_com_jiaoay_rime_core_Rime_deploy_1schema(JNIEnv *env, jobject clazz, jstrin
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_jiaoay_rime_core_Rime_deploy_1config_1file(JNIEnv *env, jobject clazz, jstring file_name, jstring version_key) {
-    const char* s = file_name == nullptr ? nullptr : env->GetStringUTFChars(file_name, nullptr);
-    const char* s2 = version_key == nullptr ? nullptr : env->GetStringUTFChars(version_key, nullptr);
+    const char *s = file_name == nullptr ? nullptr : env->GetStringUTFChars(file_name, nullptr);
+    const char *s2 = version_key == nullptr ? nullptr : env->GetStringUTFChars(version_key, nullptr);
     bool b = RimeDeployConfigFile(s, s2);
     env->ReleaseStringUTFChars(file_name, s);
     env->ReleaseStringUTFChars(version_key, s2);
@@ -144,13 +149,13 @@ Java_com_jiaoay_rime_core_Rime_create_1session(JNIEnv *env, jobject clazz) {
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_jiaoay_rime_core_Rime_find_1session(JNIEnv *env, jobject clazz) {
-    return RimeFindSession((RimeSessionId)activated_session_id);
+    return RimeFindSession((RimeSessionId) activated_session_id);
 }
 
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_jiaoay_rime_core_Rime_destroy_1session(JNIEnv *env, jobject clazz) {
-    bool ret = RimeDestroySession((RimeSessionId)activated_session_id);
+    bool ret = RimeDestroySession((RimeSessionId) activated_session_id);
     activated_session_id = 0;
     return ret;
 }
@@ -171,19 +176,19 @@ Java_com_jiaoay_rime_core_Rime_cleanup_1all_1sessions(JNIEnv *env, jobject clazz
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_jiaoay_rime_core_Rime_process_1key(JNIEnv *env, jobject clazz, jint keycode, jint mask) {
-    return RimeProcessKey((RimeSessionId)activated_session_id, keycode, mask);
+    return RimeProcessKey((RimeSessionId) activated_session_id, keycode, mask);
 }
 
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_jiaoay_rime_core_Rime_commit_1composition(JNIEnv *env, jobject clazz) {
-    return RimeCommitComposition((RimeSessionId)activated_session_id);
+    return RimeCommitComposition((RimeSessionId) activated_session_id);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_jiaoay_rime_core_Rime_clear_1composition(JNIEnv *env, jobject clazz) {
-    RimeClearComposition((RimeSessionId)activated_session_id);
+    RimeClearComposition((RimeSessionId) activated_session_id);
 }
 
 void rimeCommitToJObject(JNIEnv *env, const RimeCommit &commit, const jobject &jcommit) {
@@ -196,7 +201,7 @@ extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_jiaoay_rime_core_Rime_get_1commit(JNIEnv *env, jobject clazz, jobject jcommit) {
     RIME_STRUCT(RimeCommit, commit);
-    Bool r = RimeGetCommit((RimeSessionId)activated_session_id, &commit);
+    Bool r = RimeGetCommit((RimeSessionId) activated_session_id, &commit);
     if (r) {
         rimeCommitToJObject(env, commit, jcommit);
         RimeFreeCommit(&commit);
@@ -241,9 +246,9 @@ void rimeContextToJObject(JNIEnv *env, const RimeContext &context, const jobject
             }
             env->SetObjectField(menu, GlobalRef->RimeMenuCandidates, candidates);
         }
-            env->SetObjectField(menu, GlobalRef->RimeMenuSelectKeys,
-                                JString(env, context.menu.select_keys));
-            env->SetObjectField(jcontext, GlobalRef->RimeContextMenu, menu);
+        env->SetObjectField(menu, GlobalRef->RimeMenuSelectKeys,
+                            JString(env, context.menu.select_keys));
+        env->SetObjectField(jcontext, GlobalRef->RimeContextMenu, menu);
     }
     env->SetObjectField(jcontext, GlobalRef->RimeContextCommitTextPreview, JString(env, context.commit_text_preview));
 
@@ -300,7 +305,7 @@ Java_com_jiaoay_rime_core_Rime_get_1status(JNIEnv *env, jobject clazz, jobject j
     return r;
 }
 
-static bool is_save_option(const char* p) {
+static bool is_save_option(const char *p) {
     bool is_save = false;
     std::string option_name(p);
     if (option_name.empty()) return is_save;
@@ -310,7 +315,7 @@ static bool is_save_option(const char* p) {
     const char *key = "switcher/save_options";
     RimeConfigIterator iter = {nullptr};
     RimeConfigBeginList(&iter, &config, key);
-    while(RimeConfigNext(&iter)) {
+    while (RimeConfigNext(&iter)) {
         std::string item(RimeConfigGetCString(&config, iter.path));
         if (option_name == item) {
             is_save = true;
@@ -326,7 +331,7 @@ static bool is_save_option(const char* p) {
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_jiaoay_rime_core_Rime_set_1option(JNIEnv *env, jobject clazz, jstring option, jboolean value) {
-    const char* s = option == nullptr ? nullptr : env->GetStringUTFChars(option, nullptr);
+    const char *s = option == nullptr ? nullptr : env->GetStringUTFChars(option, nullptr);
     std::string option_name(s);
     RimeConfig config = {nullptr};
     bool b;
@@ -346,7 +351,7 @@ Java_com_jiaoay_rime_core_Rime_set_1option(JNIEnv *env, jobject clazz, jstring o
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_jiaoay_rime_core_Rime_get_1option(JNIEnv *env, jobject clazz, jstring option) {
-    const char* s = option == nullptr ? nullptr : env->GetStringUTFChars(option, nullptr);
+    const char *s = option == nullptr ? nullptr : env->GetStringUTFChars(option, nullptr);
     bool value = RimeGetOption(activated_session_id, s);
     env->ReleaseStringUTFChars(option, s);
     return value;
@@ -355,8 +360,8 @@ Java_com_jiaoay_rime_core_Rime_get_1option(JNIEnv *env, jobject clazz, jstring o
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_jiaoay_rime_core_Rime_set_1property(JNIEnv *env, jobject clazz, jstring prop, jstring value) {
-    const char* s = prop == nullptr ? nullptr : env->GetStringUTFChars(prop, nullptr);
-    const char* v = value == nullptr ? nullptr : env->GetStringUTFChars(value, nullptr);
+    const char *s = prop == nullptr ? nullptr : env->GetStringUTFChars(prop, nullptr);
+    const char *v = value == nullptr ? nullptr : env->GetStringUTFChars(value, nullptr);
     RimeSetProperty(activated_session_id, s, v);
     env->ReleaseStringUTFChars(prop, s);
     env->ReleaseStringUTFChars(value, v);
@@ -365,7 +370,7 @@ Java_com_jiaoay_rime_core_Rime_set_1property(JNIEnv *env, jobject clazz, jstring
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_com_jiaoay_rime_core_Rime_get_1property(JNIEnv *env, jobject clazz, jstring prop) {
-    const char* s = prop == nullptr ? nullptr : env->GetStringUTFChars(prop, nullptr);
+    const char *s = prop == nullptr ? nullptr : env->GetStringUTFChars(prop, nullptr);
     char value[BUFSIZE] = {0};
     bool b = RimeGetProperty(activated_session_id, s, value, BUFSIZE);
     env->ReleaseStringUTFChars(prop, s);
@@ -394,7 +399,7 @@ Java_com_jiaoay_rime_core_Rime_get_1current_1schema(JNIEnv *env, jobject clazz) 
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_jiaoay_rime_core_Rime_select_1schema(JNIEnv *env, jobject clazz, jstring schema_id) {
-    const char* s = schema_id == nullptr ? nullptr : env->GetStringUTFChars(schema_id, nullptr);
+    const char *s = schema_id == nullptr ? nullptr : env->GetStringUTFChars(schema_id, nullptr);
     RimeConfig config = {nullptr};
     Bool b = RimeUserConfigOpen("user", &config);
     if (b) {
@@ -413,7 +418,7 @@ Java_com_jiaoay_rime_core_Rime_select_1schema(JNIEnv *env, jobject clazz, jstrin
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_com_jiaoay_rime_core_Rime_config_1get_1bool(JNIEnv *env, jobject clazz, jstring name, jstring key) {
-    const char* s = env->GetStringUTFChars(name, nullptr);
+    const char *s = env->GetStringUTFChars(name, nullptr);
     RimeConfig config = {0};
     Bool b = RimeConfigOpen(s, &config);
     env->ReleaseStringUTFChars(name, s);
@@ -435,7 +440,7 @@ Java_com_jiaoay_rime_core_Rime_config_1get_1bool(JNIEnv *env, jobject clazz, jst
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_jiaoay_rime_core_Rime_config_1set_1bool(JNIEnv *env, jobject clazz, jstring name, jstring key, jboolean value) {
-    const char* s = env->GetStringUTFChars(name, nullptr);
+    const char *s = env->GetStringUTFChars(name, nullptr);
     RimeConfig config = {nullptr};
     Bool b = RimeConfigOpen(s, &config);
     env->ReleaseStringUTFChars(name, s);
@@ -451,7 +456,7 @@ Java_com_jiaoay_rime_core_Rime_config_1set_1bool(JNIEnv *env, jobject clazz, jst
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_com_jiaoay_rime_core_Rime_config_1get_1int(JNIEnv *env, jobject clazz, jstring name, jstring key) {
-    const char* s = env->GetStringUTFChars(name, nullptr);
+    const char *s = env->GetStringUTFChars(name, nullptr);
     RimeConfig config = {nullptr};
     Bool b = RimeConfigOpen(s, &config);
     env->ReleaseStringUTFChars(name, s);
@@ -473,7 +478,7 @@ Java_com_jiaoay_rime_core_Rime_config_1get_1int(JNIEnv *env, jobject clazz, jstr
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_jiaoay_rime_core_Rime_config_1set_1int(JNIEnv *env, jobject clazz, jstring name, jstring key, jint value) {
-    const char* s = env->GetStringUTFChars(name, nullptr);
+    const char *s = env->GetStringUTFChars(name, nullptr);
     RimeConfig config = {nullptr};
     Bool b = RimeConfigOpen(s, &config);
     env->ReleaseStringUTFChars(name, s);
@@ -489,7 +494,7 @@ Java_com_jiaoay_rime_core_Rime_config_1set_1int(JNIEnv *env, jobject clazz, jstr
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_com_jiaoay_rime_core_Rime_config_1get_1double(JNIEnv *env, jobject clazz, jstring name, jstring key) {
-    const char* s = env->GetStringUTFChars(name, nullptr);
+    const char *s = env->GetStringUTFChars(name, nullptr);
     RimeConfig config = {nullptr};
     Bool b = RimeConfigOpen(s, &config);
     env->ReleaseStringUTFChars(name, s);
@@ -511,7 +516,7 @@ Java_com_jiaoay_rime_core_Rime_config_1get_1double(JNIEnv *env, jobject clazz, j
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_jiaoay_rime_core_Rime_config_1set_1double(JNIEnv *env, jobject clazz, jstring name, jstring key, jdouble value) {
-    const char* s = env->GetStringUTFChars(name, nullptr);
+    const char *s = env->GetStringUTFChars(name, nullptr);
     RimeConfig config = {0};
     Bool b = RimeConfigOpen(s, &config);
     env->ReleaseStringUTFChars(name, s);
@@ -527,7 +532,7 @@ Java_com_jiaoay_rime_core_Rime_config_1set_1double(JNIEnv *env, jobject clazz, j
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_com_jiaoay_rime_core_Rime_config_1get_1string(JNIEnv *env, jobject clazz, jstring name, jstring key) {
-    const char* s = env->GetStringUTFChars(name, nullptr);
+    const char *s = env->GetStringUTFChars(name, nullptr);
     RimeConfig config = {nullptr};
     Bool b = RimeConfigOpen(s, &config);
     env->ReleaseStringUTFChars(name, s);
@@ -544,13 +549,13 @@ Java_com_jiaoay_rime_core_Rime_config_1get_1string(JNIEnv *env, jobject clazz, j
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_jiaoay_rime_core_Rime_config_1set_1string(JNIEnv *env, jobject clazz, jstring name, jstring key, jstring value) {
-    const char* s = env->GetStringUTFChars(name, nullptr);
+    const char *s = env->GetStringUTFChars(name, nullptr);
     RimeConfig config = {nullptr};
     Bool b = RimeConfigOpen(s, &config);
     env->ReleaseStringUTFChars(name, s);
     if (b) {
         s = env->GetStringUTFChars(key, nullptr);
-        const char* v = env->GetStringUTFChars(value, nullptr);
+        const char *v = env->GetStringUTFChars(value, nullptr);
         b = RimeConfigSetString(&config, s, v);
         env->ReleaseStringUTFChars(key, s);
         env->ReleaseStringUTFChars(key, v);
@@ -562,7 +567,7 @@ Java_com_jiaoay_rime_core_Rime_config_1set_1string(JNIEnv *env, jobject clazz, j
 extern "C"
 JNIEXPORT jint JNICALL
 Java_com_jiaoay_rime_core_Rime_config_1list_1size(JNIEnv *env, jobject clazz, jstring name, jstring key) {
-    const char* s = env->GetStringUTFChars(name, nullptr);
+    const char *s = env->GetStringUTFChars(name, nullptr);
     RimeConfig config = {nullptr};
     Bool b = RimeConfigOpen(s, &config);
     env->ReleaseStringUTFChars(name, s);
@@ -580,9 +585,9 @@ Java_com_jiaoay_rime_core_Rime_config_1list_1size(JNIEnv *env, jobject clazz, js
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_jiaoay_rime_core_Rime_simulate_1key_1sequence(JNIEnv *env, jobject clazz, jstring key_sequence) {
-    const char* str = key_sequence == nullptr ? nullptr : env->GetStringUTFChars(key_sequence, nullptr);
+    const char *str = key_sequence == nullptr ? nullptr : env->GetStringUTFChars(key_sequence, nullptr);
     if (str == nullptr) return false; /* OutOfMemoryError already thrown */
-    jboolean r = RimeSimulateKeySequence((RimeSessionId)activated_session_id, str);
+    jboolean r = RimeSimulateKeySequence((RimeSessionId) activated_session_id, str);
     env->ReleaseStringUTFChars(key_sequence, str);
     return r;
 }
@@ -590,7 +595,7 @@ Java_com_jiaoay_rime_core_Rime_simulate_1key_1sequence(JNIEnv *env, jobject claz
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_com_jiaoay_rime_core_Rime_get_1input(JNIEnv *env, jobject clazz) {
-    const char* c = rime_get_api()->get_input(activated_session_id);
+    const char *c = rime_get_api()->get_input(activated_session_id);
     return env->NewStringUTF(c);
 }
 
@@ -648,7 +653,7 @@ Java_com_jiaoay_rime_core_Rime_get_1librime_1version(JNIEnv *env, jobject clazz)
     return env->NewStringUTF(LIBRIME_VERSION);
 }
 
-jobjectArray get_string_list(JNIEnv *env, RimeConfig* config, const char* key) {
+jobjectArray get_string_list(JNIEnv *env, RimeConfig *config, const char *key) {
     jobjectArray jobj = nullptr;
     jclass jc = env->FindClass("java/lang/String");
     int n = RimeConfigListSize(config, key);
@@ -657,7 +662,7 @@ jobjectArray get_string_list(JNIEnv *env, RimeConfig* config, const char* key) {
         RimeConfigIterator iter = {nullptr};
         RimeConfigBeginList(&iter, config, key);
         int i = 0;
-        while(RimeConfigNext(&iter)) {
+        while (RimeConfigNext(&iter)) {
             env->SetObjectArrayElement(jobj, i++, JString(env, RimeConfigGetCString(config, iter.path)));
         }
         RimeConfigEnd(&iter);
@@ -666,7 +671,7 @@ jobjectArray get_string_list(JNIEnv *env, RimeConfig* config, const char* key) {
     return jobj;
 }
 
-static jobject rimeConfigListToJObject(JNIEnv *env, RimeConfig* config, const char* key) {
+static jobject rimeConfigListToJObject(JNIEnv *env, RimeConfig *config, const char *key) {
     RimeConfigIterator iter = {nullptr};
     bool b = RimeConfigBeginList(&iter, config, key);
     if (!b) return nullptr;
@@ -687,7 +692,7 @@ static jobject rimeConfigListToJObject(JNIEnv *env, RimeConfig* config, const ch
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_com_jiaoay_rime_core_Rime_config_1get_1list(JNIEnv *env, jobject clazz, jstring name, jstring key) {
-    const char* s = env->GetStringUTFChars(name, nullptr);
+    const char *s = env->GetStringUTFChars(name, nullptr);
     RimeConfig config = {nullptr};
     Bool b = RimeConfigOpen(s, &config);
     env->ReleaseStringUTFChars(name, s);
@@ -701,14 +706,14 @@ Java_com_jiaoay_rime_core_Rime_config_1get_1list(JNIEnv *env, jobject clazz, jst
     return value;
 }
 
-static jobject rimeConfigMapToJObject(JNIEnv *env, RimeConfig* config, const char* key) {
+static jobject rimeConfigMapToJObject(JNIEnv *env, RimeConfig *config, const char *key) {
     RimeConfigIterator iter = {nullptr};
     bool b = RimeConfigBeginMap(&iter, config, key);
     if (!b) return nullptr;
     jclass HashMap = env->FindClass("java/util/HashMap");
     jmethodID HashMapInit = env->GetMethodID(HashMap, "<init>", "()V");
     jmethodID HashMapPut = env->GetMethodID(HashMap, "put",
-                                     "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+                                            "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
     jobject jobj = env->NewObject(HashMap, HashMapInit);
     while (RimeConfigNext(&iter)) {
         jstring s = env->NewStringUTF(iter.key);
@@ -725,7 +730,7 @@ static jobject rimeConfigMapToJObject(JNIEnv *env, RimeConfig* config, const cha
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_com_jiaoay_rime_core_Rime_config_1get_1map(JNIEnv *env, jobject clazz, jstring name, jstring key) {
-    const char* s = env->GetStringUTFChars(name, nullptr);
+    const char *s = env->GetStringUTFChars(name, nullptr);
     RimeConfig config = {nullptr};
     Bool b = RimeConfigOpen(s, &config);
     env->ReleaseStringUTFChars(name, s);
@@ -739,7 +744,7 @@ Java_com_jiaoay_rime_core_Rime_config_1get_1map(JNIEnv *env, jobject clazz, jstr
     return value;
 }
 
-jobject rimeConfigValueToJObject(JNIEnv *env, RimeConfig* config, const char* key) {
+jobject rimeConfigValueToJObject(JNIEnv *env, RimeConfig *config, const char *key) {
     jobject ret;
 
     const char *value = RimeConfigGetCString(config, key);
@@ -753,7 +758,7 @@ jobject rimeConfigValueToJObject(JNIEnv *env, RimeConfig* config, const char* ke
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_com_jiaoay_rime_core_Rime_config_1get_1value(JNIEnv *env, jobject clazz, jstring name, jstring key) {
-    const char* s = env->GetStringUTFChars(name, nullptr);
+    const char *s = env->GetStringUTFChars(name, nullptr);
     RimeConfig config = {nullptr};
     Bool b = RimeConfigOpen(s, &config);
     env->ReleaseStringUTFChars(name, s);
@@ -770,7 +775,7 @@ Java_com_jiaoay_rime_core_Rime_config_1get_1value(JNIEnv *env, jobject clazz, js
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_com_jiaoay_rime_core_Rime_schema_1get_1value(JNIEnv *env, jobject clazz, jstring name, jstring key) {
-    const char* s = env->GetStringUTFChars(name, nullptr);
+    const char *s = env->GetStringUTFChars(name, nullptr);
     RimeConfig config = {nullptr};
     Bool b = RimeSchemaOpen(s, &config);
     env->ReleaseStringUTFChars(name, s);
@@ -787,7 +792,7 @@ Java_com_jiaoay_rime_core_Rime_schema_1get_1value(JNIEnv *env, jobject clazz, js
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_jiaoay_rime_core_Rime_run_1task(JNIEnv *env, jobject clazz, jstring task_name) {
-    const char* s = env->GetStringUTFChars(task_name, nullptr);
+    const char *s = env->GetStringUTFChars(task_name, nullptr);
     RimeConfig config = {nullptr};
     Bool b = RimeRunTask(s);
     env->ReleaseStringUTFChars(task_name, s);
