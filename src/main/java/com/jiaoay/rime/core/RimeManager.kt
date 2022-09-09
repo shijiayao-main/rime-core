@@ -1,15 +1,6 @@
 package com.jiaoay.rime.core
 
-import android.text.TextUtils
-import com.jiaoay.rime.data.AppPrefs
-import com.jiaoay.rime.data.DataManager
-import com.jiaoay.rime.data.opencc.OpenCCDictManager
-import java.io.BufferedReader
-import java.io.CharArrayWriter
 import java.io.File
-import java.io.FileReader
-import java.io.FileWriter
-import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.runBlocking
 
@@ -25,8 +16,8 @@ class RimeManager private constructor() {
     private val rimeContext: RimeContext = RimeContext()
     private val rimeStatus = RimeStatus()
     private var rimeSchema: RimeSchema? = null
-    private var rimeSchemaList: List<Map<String?, String?>?>? = null
-    private var onMessage: AtomicBoolean = AtomicBoolean(false)
+    var rimeSchemaList: List<Map<String?, String?>?>? = null
+    val onMessage: AtomicBoolean = AtomicBoolean(false)
 
     private var showSwitches = true
 
@@ -63,6 +54,10 @@ class RimeManager private constructor() {
         return rime.select_schemas(schemaIdList)
     }
 
+    fun selectSchema(schemaId: String): Boolean {
+        return rime.select_schema(schemaId)
+    }
+
     fun getSelectedSchemaList(): List<Map<String?, String?>?>? {
         return rime.get_selected_schema_list()
     }
@@ -90,34 +85,33 @@ class RimeManager private constructor() {
     fun getUserDataDir(): String {
         return rime.get_user_data_dir()
     }
-    //////
 
-    fun syncRime(fullCheck: Boolean = false) {
-        onMessage.set(false)
-        val appPrefs = AppPrefs.defaultInstance()
-        val sharedDataDir = appPrefs.profile.sharedDataDir
-        val userDataDir = appPrefs.profile.userDataDir
-
-        // Initialize librime APIs
+    fun setupAndInitialize(sharedDataDir: String, userDataDir: String) {
         rime.setup(sharedDataDir, userDataDir)
         rime.initialize(sharedDataDir, userDataDir)
-        check(fullCheck)
+    }
+
+    fun setNotificationHandler() {
         rime.set_notification_handler()
-        if (rime.find_session() || rime.create_session() != 0) {
-            initSchema()
-        }
-        if (fullCheck) {
-            OpenCCDictManager.internalDeploy()
-        }
     }
 
-
-    fun syncUserData(): Boolean {
-        val result = rime.sync_user_data()
-        destroyRime()
-        syncRime(true)
-        return result
+    fun findSession(): Boolean {
+        return rime.find_session()
     }
+
+    fun createSession(): Int {
+        return rime.create_session()
+    }
+
+    fun trySyncUserData(): Boolean {
+        return rime.sync_user_data()
+    }
+
+    fun openccConvert(line: String, name: String): String {
+        return rime.opencc_convert(line = line, name = name) ?: ""
+    }
+
+    //////
 
     fun getCommitText(): String {
         return rimeCommit.text
@@ -198,7 +192,6 @@ class RimeManager private constructor() {
         rime.finalize1()
     }
 
-
     fun check(full_check: Boolean) {
         if (
             rime.start_maintenance(full_check) &&
@@ -206,16 +199,6 @@ class RimeManager private constructor() {
         ) {
             rime.join_maintenance_thread()
         }
-    }
-
-    fun openccConvert(line: String, name: String): String {
-        if (!TextUtils.isEmpty(name)) {
-            val f = File(DataManager.getDataDir("opencc"), name)
-            if (f.exists()) {
-                return rime.opencc_convert(line, f.absolutePath) ?: ""
-            }
-        }
-        return line
     }
 
 
@@ -232,68 +215,6 @@ class RimeManager private constructor() {
         runBlocking {
             getContexts()
         }
-    }
-
-    fun selectSchema(id: Int): Boolean {
-        rimeSchemaList?.let { list ->
-            val n = list.size
-            if (id < 0 || id >= n) return false
-            val m: Map<String?, String?> = list[id] ?: return false
-            val target: String = m["schema_id"] ?: return false
-            return if (target.contentEquals(schemaId)) {
-                false
-            } else {
-                selectSchema(target)
-            }
-        }
-        return false
-    }
-
-
-    private fun overWriteSchema(schema_id: String, map: MutableMap<String, String>): Boolean {
-        val file = File(
-            rime.get_user_data_dir() + File.separator + "build",
-            "$schema_id.schema.yaml"
-        )
-        try {
-            val `in` = FileReader(file)
-            val bufIn = BufferedReader(`in`)
-            val tempStream = CharArrayWriter()
-            var line: String?
-            read@ while (bufIn.readLine().also { line = it } != null) {
-                for (k in map.keys) {
-                    val key = "$k: "
-                    if (line!!.contains(key)) {
-                        val value = ": " + map[k] + System.getProperty("line.separator")
-                        tempStream.write(line!!.replaceFirst(":.+".toRegex(), value))
-                        map.remove(k)
-                        continue@read
-                    }
-                }
-                tempStream.write(line)
-                tempStream.append(System.getProperty("line.separator"))
-            }
-            bufIn.close()
-            val out = FileWriter(file)
-            tempStream.writeTo(out)
-            out.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
-            return false
-        }
-        return map.isEmpty()
-    }
-
-
-    // 刷新当前输入方案
-    fun applySchemaChange() {
-        // 实测直接select_schema(schema_id)方案没有重新载入，切换到不存在的方案，再切回去（会产生1秒的额外耗时）.需要找到更好的方法
-        // 不发生覆盖则不生效
-        if (overWriteSchema(schemaId)) {
-            rime.select_schema("null")
-            rime.select_schema(schemaId)
-        }
-        getContexts()
     }
 
 
@@ -472,25 +393,6 @@ class RimeManager private constructor() {
 
     val schemaName: String
         get() = rimeStatus.schema_name
-
-    private fun selectSchema(schemaId: String): Boolean {
-        overWriteSchema(schemaId)
-        val b = rime.select_schema(schemaId)
-        getContexts()
-        return b
-    }
-
-    // 临时修改scheme文件参数
-    // 临时修改build后的scheme可以避免build过程的耗时
-    // 另外实际上jni读入yaml、修改、导出的效率并不高
-    private fun overWriteSchema(schemaId: String): Boolean {
-        val map: MutableMap<String, String> = HashMap()
-        val pageSize = AppPrefs.defaultInstance().keyboard.candidatePageSize
-        if (pageSize != "0") {
-            map["page_size"] = pageSize
-        }
-        return if (map.isEmpty()) false else overWriteSchema(schemaId, map)
-    }
 
 
     /**

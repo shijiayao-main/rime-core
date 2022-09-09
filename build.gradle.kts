@@ -57,10 +57,4 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.3")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
-
-    // TODO: 临时解决编译问题
-    implementation("androidx.preference:preference-ktx:1.2.0")
-    implementation("com.blankj:utilcodex:1.30.6")
-    implementation("com.google.android.flexbox:flexbox:3.0.0")
-
 }
