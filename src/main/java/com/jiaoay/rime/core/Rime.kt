@@ -128,7 +128,7 @@ class Rime {
 
     external fun config_get_list(name: String?, key: String?): List<*>?
 
-    external fun config_get_map(name: String, key: String): Map<String?, Map<String?, *>?>?
+    external fun config_get_map(name: String, key: String): Map<String, Map<String, *>?>?
 
     external fun config_get_value(name: String?, key: String?): Any?
 

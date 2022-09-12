@@ -70,8 +70,8 @@ class RimeManager private constructor() {
         return rime.schema_get_value(name, key)
     }
 
-    fun configGetMap(name: String, key: String): Map<String?, Map<String?, *>?>? {
-        return rime.config_get_map(name = name, key = key)
+    fun configGetMap(name: String, key: String): Map<String, Map<String, *>?> {
+        return rime.config_get_map(name = name, key = key)?: mapOf()
     }
 
     fun getKeycodeByName(name: String): Int {
