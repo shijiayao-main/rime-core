@@ -4,11 +4,17 @@ package com.jiaoay.rime.core
  * Rime編碼區
  */
 class RimeComposition {
+    @JvmField
     var length = 0
+    @JvmField
     var cursor_pos = 0
+    @JvmField
     var sel_start = 0
+    @JvmField
     var sel_end = 0
+    @JvmField
     var preedit: String? = null
+    @JvmField
     var bytes: ByteArray? = null
     val text: String?
         get() {
